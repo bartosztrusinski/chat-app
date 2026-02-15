@@ -24,6 +24,10 @@ io.on('connection', (socket) => {
 	socket.on('disconnect', () => {
 		console.log('A user disconnected');
 	});
+
+	socket.on('message', (message) => {
+		io.emit('message', message);
+	});
 });
 
 server.listen(PORT, () => console.log(`Server has started on port ${PORT}`));
