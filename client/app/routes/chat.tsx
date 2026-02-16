@@ -1,13 +1,8 @@
 import { type SubmitEvent, useEffect, useState } from 'react';
+import { CHAT_MESSAGE_EVENT, getChatRoomMessageEvent } from '~/../../constants';
+import type { ChatMessage } from '~/../../types';
 import { socket } from '~/socket';
 import type { Route } from '../+types/root';
-
-type ChatMessage = {
-	roomId: string;
-	message: string;
-};
-
-const CHAT_MESSAGE_EVENT = 'chat-message';
 
 export default function Chat({ params }: Route.ComponentProps) {
 	const { roomId } = params;
@@ -19,16 +14,14 @@ export default function Chat({ params }: Route.ComponentProps) {
 	}
 
 	useEffect(() => {
-		const CHAT_ROOM_MESSAGE_EVENT = `${roomId}-${CHAT_MESSAGE_EVENT}`;
-
 		function onChatRoomMessageEvent(message: string) {
 			setChatMessages((prev) => [...prev, message]);
 		}
 
-		socket.on(CHAT_ROOM_MESSAGE_EVENT, onChatRoomMessageEvent);
+		socket.on(getChatRoomMessageEvent(roomId), onChatRoomMessageEvent);
 
 		return () => {
-			socket.off(CHAT_ROOM_MESSAGE_EVENT, onChatRoomMessageEvent);
+			socket.off(getChatRoomMessageEvent(roomId), onChatRoomMessageEvent);
 		};
 	}, [roomId]);
 
@@ -37,7 +30,7 @@ export default function Chat({ params }: Route.ComponentProps) {
 		if (inputValue.trim().length > 0 && roomId) {
 			socket.timeout(2000).emit(CHAT_MESSAGE_EVENT, {
 				roomId,
-				message: inputValue,
+				body: inputValue,
 			} satisfies ChatMessage);
 			setInputValue('');
 		}
