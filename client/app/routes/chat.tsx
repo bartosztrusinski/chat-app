@@ -1,28 +1,46 @@
 import { type SubmitEvent, useEffect, useState } from 'react';
 import { socket } from '~/socket';
+import type { Route } from '../+types/root';
 
-export default function Chat() {
-	const [messages, setMessages] = useState<string[]>([]);
-	const [messageInput, setMessageInput] = useState('');
+type ChatMessage = {
+	roomId: string;
+	message: string;
+};
+
+const CHAT_MESSAGE_EVENT = 'chat-message';
+
+export default function Chat({ params }: Route.ComponentProps) {
+	const { roomId } = params;
+	const [chatMessages, setChatMessages] = useState<string[]>([]);
+	const [inputValue, setInputValue] = useState('');
+
+	if (!roomId) {
+		throw new Error('Room ID is required');
+	}
 
 	useEffect(() => {
-		function onMessageEvent(message: string) {
-			console.log(message);
-			setMessages((prev) => [...prev, message]);
+		const CHAT_ROOM_MESSAGE_EVENT = `${roomId}-${CHAT_MESSAGE_EVENT}`;
+
+		function onChatRoomMessageEvent(message: string) {
+			setChatMessages((prev) => [...prev, message]);
 		}
 
-		socket.on('message', onMessageEvent);
+		socket.on(CHAT_ROOM_MESSAGE_EVENT, onChatRoomMessageEvent);
 
 		return () => {
-			socket.off('message', onMessageEvent);
+			socket.off(CHAT_ROOM_MESSAGE_EVENT, onChatRoomMessageEvent);
 		};
-	}, []);
+	}, [roomId]);
 
-	function onSubmit(event: SubmitEvent<HTMLFormElement>) {
+	function sendChatRoomMessage(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
-		if (!messageInput.trim()) return;
-		socket.timeout(2000).emit('message', messageInput);
-		setMessageInput('');
+		if (inputValue.trim().length > 0 && roomId) {
+			socket.timeout(2000).emit(CHAT_MESSAGE_EVENT, {
+				roomId,
+				message: inputValue,
+			} satisfies ChatMessage);
+			setInputValue('');
+		}
 	}
 
 	return (
@@ -32,23 +50,23 @@ export default function Chat() {
 				name="description"
 				content="A real-time chat application built with React and Socket.IO."
 			/>
-			<h1 className="text-2xl font-bold">Chat Room</h1>
+			<h1 className="text-2xl font-bold">Chat Room {roomId}</h1>
 			<section>
 				<ul>
-					{messages.map((message, index) => (
+					{chatMessages.map((message, index) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: order doesn't change and messages are immutable
 						<li key={index}>{message}</li>
 					))}
 				</ul>
 			</section>
 			<section>
-				<form className="space-x-2" onSubmit={onSubmit}>
+				<form className="space-x-2" onSubmit={sendChatRoomMessage}>
 					<input
 						type="text"
 						placeholder="Type a message..."
 						className="border rounded p-2 "
-						value={messageInput}
-						onChange={(event) => setMessageInput(event.target.value)}
+						value={inputValue}
+						onChange={(event) => setInputValue(event.target.value)}
 					/>
 					<button type="submit" className="bg-neutral-50 text-neutral-900 rounded p-2">
 						Send

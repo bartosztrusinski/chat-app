@@ -3,11 +3,17 @@ import cors from 'cors';
 import express from 'express';
 import { Server } from 'socket.io';
 
+type ChatMessage = {
+	roomId: string;
+	message: string;
+};
+
 const PORT = process.env.PORT ?? 5000;
 const CORS_OPTIONS: cors.CorsOptions = {
 	origin: process.env.CLIENT_URL ?? 'http://localhost:5173',
 	methods: ['GET', 'POST'],
 };
+const CHAT_MESSAGE_EVENT = 'chat-message';
 
 const app = express();
 const server = createServer(app);
@@ -25,8 +31,8 @@ io.on('connection', (socket) => {
 		console.log('A user disconnected');
 	});
 
-	socket.on('message', (message) => {
-		io.emit('message', message);
+	socket.on(CHAT_MESSAGE_EVENT, ({ message, roomId }: ChatMessage) => {
+		io.emit(`${roomId}-${CHAT_MESSAGE_EVENT}`, message);
 	});
 });
 
