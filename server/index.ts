@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import { Server } from 'socket.io';
 import { CHAT_MESSAGE_EVENT, getChatRoomMessageEvent } from '../constants';
-import type { ChatMessage } from '../types';
+import type { ClientChatMessage, ServerChatMessage } from '../types';
 
 const PORT = process.env.PORT ?? 5000;
 const CORS_OPTIONS: cors.CorsOptions = {
@@ -27,8 +27,12 @@ io.on('connection', (socket) => {
 		console.log('A user disconnected');
 	});
 
-	socket.on(CHAT_MESSAGE_EVENT, ({ body, roomId }: ChatMessage) => {
-		io.emit(getChatRoomMessageEvent(roomId), body);
+	socket.on(CHAT_MESSAGE_EVENT, ({ body, roomId }: ClientChatMessage) => {
+		const { userId } = socket.handshake.auth;
+		io.emit(getChatRoomMessageEvent(roomId), {
+			body,
+			userId,
+		} satisfies ServerChatMessage);
 	});
 });
 
