@@ -1,4 +1,4 @@
-import { type SubmitEvent, useEffect, useState } from 'react';
+import { type SubmitEvent, useEffect, useRef, useState } from 'react';
 import { CHAT_MESSAGE_EVENT, getChatRoomMessageEvent } from '~/../../constants';
 import type { ClientChatMessage, ServerChatMessage } from '~/../../types';
 import { getUserId } from '~/get-user-id';
@@ -11,6 +11,7 @@ export default function Chat({ params }: Route.ComponentProps) {
 	const { roomId } = params;
 	const [chatMessages, setChatMessages] = useState<ServerChatMessage[]>([]);
 	const [inputValue, setInputValue] = useState('');
+	const chatBottom = useRef<HTMLDivElement>(null);
 
 	if (!roomId) {
 		throw new Error('Room ID is required');
@@ -27,6 +28,11 @@ export default function Chat({ params }: Route.ComponentProps) {
 			socket.off(getChatRoomMessageEvent(roomId), onChatRoomMessageEvent);
 		};
 	}, [roomId]);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: trigger effect when messages change to scroll to bottom
+	useEffect(() => {
+		chatBottom.current?.scrollIntoView({ behavior: 'smooth' });
+	}, [chatMessages]);
 
 	function sendChatRoomMessage(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -53,19 +59,20 @@ export default function Chat({ params }: Route.ComponentProps) {
 						<li
 							// biome-ignore lint/suspicious/noArrayIndexKey: order doesn't change and messages are immutable
 							key={index}
-							className={`py-2 px-3 rounded-xl max-w-2/3 w-fit text-pretty ${senderId === userId ? 'bg-blue-600 self-end' : 'bg-neutral-700'}`}
+							className={`py-2 px-3 rounded-xl max-w-2/3 w-fit wrap-break-word text-pretty ${senderId === userId ? 'bg-blue-600 self-end' : 'bg-neutral-700'}`}
 						>
 							{body}
 						</li>
 					))}
 				</ul>
+				<div ref={chatBottom}></div>
 			</section>
 			<section className="p-3 border-t border-neutral-800">
 				<form className="space-x-2" onSubmit={sendChatRoomMessage}>
 					<input
 						type="text"
 						placeholder="Message"
-						// biome-ignore lint/a11y/noAutofocus: Full page chat app
+						// biome-ignore lint/a11y/noAutofocus: full page chat app
 						autoFocus
 						className="rounded-2xl w-full px-4 py-2 bg-neutral-700"
 						value={inputValue}
