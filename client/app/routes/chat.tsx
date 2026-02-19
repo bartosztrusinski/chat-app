@@ -40,7 +40,7 @@ export default function Chat({ params }: Route.ComponentProps) {
 	}
 
 	return (
-		<div className="max-w-md h-dvh mx-auto flex flex-col bg-neutral-900 border border-neutral-800">
+		<div className="max-w-lg h-dvh mx-auto flex flex-col bg-neutral-900 border border-neutral-800">
 			<title>Chat App</title>
 			<meta
 				name="description"
@@ -48,12 +48,12 @@ export default function Chat({ params }: Route.ComponentProps) {
 			/>
 			<h1 className="text-2xl font-bold p-3 border-b border-neutral-800">{roomId}</h1>
 			<section className="grow overflow-y-auto p-3">
-				<ul className="gap-2 flex flex-col items-start">
+				<ul className="gap-2 flex flex-col">
 					{chatMessages.map(({ body, userId: senderId }, index) => (
 						<li
 							// biome-ignore lint/suspicious/noArrayIndexKey: order doesn't change and messages are immutable
 							key={index}
-							className={`py-2 px-3 rounded-xl max-w-3/5 text-pretty ${senderId === userId ? 'bg-blue-600 self-end' : 'bg-neutral-700'}`}
+							className={`py-2 px-3 rounded-xl max-w-2/3 w-fit text-pretty ${senderId === userId ? 'bg-blue-600 self-end' : 'bg-neutral-700'}`}
 						>
 							{body}
 						</li>
@@ -65,6 +65,8 @@ export default function Chat({ params }: Route.ComponentProps) {
 					<input
 						type="text"
 						placeholder="Message"
+						// biome-ignore lint/a11y/noAutofocus: Full page chat app
+						autoFocus
 						className="rounded-2xl w-full px-4 py-2 bg-neutral-700"
 						value={inputValue}
 						onChange={(event) => setInputValue(event.target.value)}
