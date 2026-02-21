@@ -2,7 +2,11 @@ import { createServer } from 'node:http';
 import cors from 'cors';
 import express from 'express';
 import { Server } from 'socket.io';
-import { CHAT_MESSAGE_EVENT, getChatRoomMessageEvent } from '../constants';
+import {
+	CHAT_MESSAGE_EVENT,
+	getChatRoomMessageEvent,
+	SET_USERNAME_EVENT,
+} from '../constants';
 import type { ClientChatMessage, ServerChatMessage } from '../types';
 
 const PORT = process.env.PORT ?? 5000;
@@ -17,22 +21,17 @@ const io = new Server(server, { cors: CORS_OPTIONS });
 
 app.use(cors(CORS_OPTIONS));
 
-app.get('/', (_, res) => {
-	res.send('Hello from the server');
-});
-
 io.on('connection', (socket) => {
-	console.log('A user connected');
-	socket.on('disconnect', () => {
-		console.log('A user disconnected');
-	});
-
 	socket.on(CHAT_MESSAGE_EVENT, ({ body, roomId }: ClientChatMessage) => {
-		const { userId } = socket.handshake.auth;
+		const { user } = socket.handshake.auth;
 		io.emit(getChatRoomMessageEvent(roomId), {
 			body,
-			userId,
+			user,
 		} satisfies ServerChatMessage);
+	});
+
+	socket.on(SET_USERNAME_EVENT, (username) => {
+		socket.handshake.auth.user.name = username;
 	});
 });
 

@@ -1,3 +1,8 @@
+export type User = {
+	id: string;
+	name: string;
+};
+
 export type ClientChatMessage = {
 	roomId: string;
 	body: string;
@@ -5,5 +10,5 @@ export type ClientChatMessage = {
 
 export type ServerChatMessage = {
 	body: string;
-	userId: string;
+	user: User;
 };

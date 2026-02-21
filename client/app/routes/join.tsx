@@ -1,11 +1,14 @@
 import { type SubmitEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { socket } from '~/socket';
+import { getUser, updateUsername } from '~/user';
 
 export default function Join() {
+	const user = getUser();
 	const navigate = useNavigate();
 	const [isConnected, setIsConnected] = useState(socket.connected);
 	const [roomId, setRoomId] = useState('');
+	const [username, setUsername] = useState(user?.name ?? '');
 
 	useEffect(() => {
 		function onConnect() {
@@ -27,6 +30,11 @@ export default function Join() {
 
 	function joinChatRoom(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
+
+		if ((user && user.name !== username.trim()) || !user) {
+			updateUsername(username);
+		}
+
 		if (roomId.trim().length > 0) {
 			navigate(`/chat/${roomId}`);
 		}
@@ -64,18 +72,34 @@ export default function Join() {
 			</section>
 
 			<section>
-				<form className="space-x-2" onSubmit={joinChatRoom}>
+				<form className="flex flex-col items-start gap-2" onSubmit={joinChatRoom}>
 					<label htmlFor="room-id">Room ID:</label>
 					<input
 						id="room-id"
 						type="text"
-						className="border rounded p-2 "
+						required
+						minLength={1}
+						maxLength={24}
+						className="border rounded p-2"
 						value={roomId}
 						onChange={(event) => setRoomId(event.target.value)}
 					/>
+					<label htmlFor="username">Username:</label>
+					<input
+						id="username"
+						type="text"
+						required
+						minLength={1}
+						maxLength={24}
+						className="border rounded p-2"
+						value={username}
+						onChange={(event) => setUsername(event.target.value)}
+					/>
 					<button
 						type="submit"
-						disabled={roomId.trim().length === 0 || !isConnected}
+						disabled={
+							roomId.trim().length === 0 || username.trim().length === 0 || !isConnected
+						}
 						className="bg-neutral-50 text-neutral-900 rounded p-2 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						Join Chat
