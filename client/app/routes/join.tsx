@@ -1,7 +1,7 @@
 import { type SubmitEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { socket } from '~/socket';
-import { getUser, updateUsername } from '~/user';
+import { getUser, updateUser } from '~/user';
 
 export default function Join() {
 	const user = getUser();
@@ -32,7 +32,7 @@ export default function Join() {
 		event.preventDefault();
 
 		if ((user && user.name !== username.trim()) || !user) {
-			updateUsername(username);
+			updateUser(username);
 		}
 
 		if (roomId.trim().length > 0) {

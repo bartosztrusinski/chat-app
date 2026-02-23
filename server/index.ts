@@ -5,9 +5,9 @@ import { Server } from 'socket.io';
 import {
 	CHAT_MESSAGE_EVENT,
 	getChatRoomMessageEvent,
-	SET_USERNAME_EVENT,
+	SET_USER_EVENT,
 } from '../constants';
-import type { ClientChatMessage, ServerChatMessage } from '../types';
+import type { ClientChatMessage, ServerChatMessage, User } from '../types';
 
 const PORT = process.env.PORT ?? 5000;
 const CORS_OPTIONS: cors.CorsOptions = {
@@ -30,8 +30,8 @@ io.on('connection', (socket) => {
 		} satisfies ServerChatMessage);
 	});
 
-	socket.on(SET_USERNAME_EVENT, (username) => {
-		socket.handshake.auth.user.name = username;
+	socket.on(SET_USER_EVENT, (user: User) => {
+		socket.handshake.auth.user = user;
 	});
 });
 
