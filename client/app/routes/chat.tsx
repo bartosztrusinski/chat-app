@@ -74,26 +74,39 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 			<h1 className="text-2xl font-bold p-3 border-b border-neutral-800">{roomId}</h1>
 			<section className="grow overflow-y-auto p-3">
 				<ul className="gap-3 flex flex-col">
-					{chatMessages.map((message, index) => (
-						<li
-							// biome-ignore lint/suspicious/noArrayIndexKey: order doesn't change and messages are immutable
-							key={index}
-							className={`flex items-center gap-1 ${message.type === 'system' ? 'justify-center' : message.user.id === currentUser.id ? 'justify-end' : 'flex-row-reverse justify-end'}`}
-						>
-							{message.type === 'system' ? (
-								<div className="text-sm text-neutral-400 italic">{message.body}</div>
-							) : (
-								<>
-									<div className="text-sm text-neutral-400">{message.user.name}</div>
-									<div
-										className={`py-2 px-3 rounded-xl max-w-2/3 w-fit wrap-break-word text-pretty ${message.user.id === currentUser.id ? 'bg-blue-600' : 'bg-neutral-700'}`}
-									>
-										{message.body}
-									</div>
-								</>
-							)}
-						</li>
-					))}
+					{chatMessages.map((message, index) => {
+						const previousMessage = index > 0 ? chatMessages[index - 1] : null;
+						const showUsername =
+							(message.type === 'chat' &&
+								previousMessage?.type === 'chat' &&
+								previousMessage.user.id !== message.user.id) ||
+							previousMessage?.type === 'system';
+
+						return (
+							<li
+								// biome-ignore lint/suspicious/noArrayIndexKey: order doesn't change and messages are immutable
+								key={index}
+								className={`flex flex-col gap-1 ${message.type === 'system' ? 'items-center' : message.user.id === currentUser.id ? 'items-end' : 'justify-start'}`}
+							>
+								{message.type === 'system' ? (
+									<div className="text-sm text-neutral-400 italic">{message.body}</div>
+								) : (
+									<>
+										{showUsername && (
+											<div className="text-sm text-neutral-400 px-1">
+												{message.user.name}
+											</div>
+										)}
+										<div
+											className={`py-2 px-3 rounded-xl max-w-2/3 w-fit wrap-break-word text-pretty ${message.user.id === currentUser.id ? 'bg-blue-600' : 'bg-neutral-700'}`}
+										>
+											{message.body}
+										</div>
+									</>
+								)}
+							</li>
+						);
+					})}
 				</ul>
 				<div ref={chatBottom}></div>
 			</section>
