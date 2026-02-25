@@ -4,9 +4,6 @@ import express from 'express';
 import { Server } from 'socket.io';
 import {
 	CHAT_MESSAGE_EVENT,
-	getChatRoomJoinEvent,
-	getChatRoomLeaveEvent,
-	getChatRoomMessageEvent,
 	JOIN_ROOM_EVENT,
 	LEAVE_ROOM_EVENT,
 	SET_USER_EVENT,
@@ -28,7 +25,7 @@ app.use(cors(CORS_OPTIONS));
 io.on('connection', (socket) => {
 	socket.on(CHAT_MESSAGE_EVENT, ({ body, roomId }: ClientChatMessage) => {
 		const { user } = socket.handshake.auth;
-		io.emit(getChatRoomMessageEvent(roomId), {
+		io.to(roomId).emit(CHAT_MESSAGE_EVENT, {
 			type: 'chat',
 			body,
 			user,
@@ -41,7 +38,8 @@ io.on('connection', (socket) => {
 
 	socket.on(JOIN_ROOM_EVENT, (roomId: string) => {
 		const { user } = socket.handshake.auth;
-		io.emit(getChatRoomJoinEvent(roomId), {
+		socket.join(roomId);
+		socket.to(roomId).emit(JOIN_ROOM_EVENT, {
 			type: 'system',
 			body: `${user.name} has joined the room.`,
 		} satisfies ServerChatMessage);
@@ -49,7 +47,8 @@ io.on('connection', (socket) => {
 
 	socket.on(LEAVE_ROOM_EVENT, (roomId: string) => {
 		const { user } = socket.handshake.auth;
-		io.emit(getChatRoomLeaveEvent(roomId), {
+		socket.leave(roomId);
+		socket.to(roomId).emit(LEAVE_ROOM_EVENT, {
 			type: 'system',
 			body: `${user.name} has left the room.`,
 		} satisfies ServerChatMessage);

@@ -1,13 +1,6 @@
 import { type SubmitEvent, useEffect, useRef, useState } from 'react';
 import { redirect } from 'react-router';
-import {
-	CHAT_MESSAGE_EVENT,
-	getChatRoomJoinEvent,
-	getChatRoomLeaveEvent,
-	getChatRoomMessageEvent,
-	JOIN_ROOM_EVENT,
-	LEAVE_ROOM_EVENT,
-} from '~/../../constants';
+import { CHAT_MESSAGE_EVENT, JOIN_ROOM_EVENT, LEAVE_ROOM_EVENT } from '~/../../constants';
 import type { ClientChatMessage, ServerChatMessage } from '~/../../types';
 import { socket } from '~/socket';
 import { getUser } from '~/user';
@@ -35,15 +28,15 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 			setChatMessages((prev) => [...prev, message]);
 		}
 
-		socket.on(getChatRoomMessageEvent(roomId), onChatRoomMessageEvent);
-		socket.on(getChatRoomJoinEvent(roomId), onChatRoomMessageEvent);
-		socket.on(getChatRoomLeaveEvent(roomId), onChatRoomMessageEvent);
+		socket.on(CHAT_MESSAGE_EVENT, onChatRoomMessageEvent);
+		socket.on(JOIN_ROOM_EVENT, onChatRoomMessageEvent);
+		socket.on(LEAVE_ROOM_EVENT, onChatRoomMessageEvent);
 		socket.emit(JOIN_ROOM_EVENT, roomId);
 
 		return () => {
-			socket.off(getChatRoomMessageEvent(roomId), onChatRoomMessageEvent);
-			socket.off(getChatRoomJoinEvent(roomId), onChatRoomMessageEvent);
-			socket.off(getChatRoomLeaveEvent(roomId), onChatRoomMessageEvent);
+			socket.off(CHAT_MESSAGE_EVENT, onChatRoomMessageEvent);
+			socket.off(JOIN_ROOM_EVENT, onChatRoomMessageEvent);
+			socket.off(LEAVE_ROOM_EVENT, onChatRoomMessageEvent);
 			socket.emit(LEAVE_ROOM_EVENT, roomId);
 		};
 	}, [roomId]);
