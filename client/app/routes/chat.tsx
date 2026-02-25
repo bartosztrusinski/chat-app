@@ -1,24 +1,31 @@
 import { type SubmitEvent, useEffect, useRef, useState } from 'react';
 import { redirect } from 'react-router';
-import { CHAT_MESSAGE_EVENT, getChatRoomMessageEvent } from '~/../../constants';
+import {
+	CHAT_MESSAGE_EVENT,
+	getChatRoomJoinEvent,
+	getChatRoomLeaveEvent,
+	getChatRoomMessageEvent,
+	JOIN_ROOM_EVENT,
+	LEAVE_ROOM_EVENT,
+} from '~/../../constants';
 import type { ClientChatMessage, ServerChatMessage } from '~/../../types';
 import { socket } from '~/socket';
 import { getUser } from '~/user';
 import type { Route } from './+types/chat';
 
 export async function clientLoader() {
-	const user = getUser();
+	const currentUser = getUser();
 
-	if (!user) {
+	if (!currentUser) {
 		return redirect('/');
 	}
 
-	return { user };
+	return { currentUser };
 }
 
 export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	const { roomId } = params;
-	const { user } = loaderData;
+	const { currentUser } = loaderData;
 	const [chatMessages, setChatMessages] = useState<ServerChatMessage[]>([]);
 	const [inputValue, setInputValue] = useState('');
 	const chatBottom = useRef<HTMLDivElement>(null);
@@ -29,9 +36,15 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 		}
 
 		socket.on(getChatRoomMessageEvent(roomId), onChatRoomMessageEvent);
+		socket.on(getChatRoomJoinEvent(roomId), onChatRoomMessageEvent);
+		socket.on(getChatRoomLeaveEvent(roomId), onChatRoomMessageEvent);
+		socket.emit(JOIN_ROOM_EVENT, roomId);
 
 		return () => {
 			socket.off(getChatRoomMessageEvent(roomId), onChatRoomMessageEvent);
+			socket.off(getChatRoomJoinEvent(roomId), onChatRoomMessageEvent);
+			socket.off(getChatRoomLeaveEvent(roomId), onChatRoomMessageEvent);
+			socket.emit(LEAVE_ROOM_EVENT, roomId);
 		};
 	}, [roomId]);
 
@@ -61,18 +74,24 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 			<h1 className="text-2xl font-bold p-3 border-b border-neutral-800">{roomId}</h1>
 			<section className="grow overflow-y-auto p-3">
 				<ul className="gap-3 flex flex-col">
-					{chatMessages.map(({ body, user: sender }, index) => (
+					{chatMessages.map((message, index) => (
 						<li
 							// biome-ignore lint/suspicious/noArrayIndexKey: order doesn't change and messages are immutable
 							key={index}
-							className={`flex items-center gap-1 ${sender.id === user?.id ? 'justify-end' : 'flex-row-reverse justify-end'}`}
+							className={`flex items-center gap-1 ${message.type === 'system' ? 'justify-center' : message.user.id === currentUser.id ? 'justify-end' : 'flex-row-reverse justify-end'}`}
 						>
-							<div className="text-sm text-neutral-400">{sender.name}</div>
-							<div
-								className={`py-2 px-3 rounded-xl max-w-2/3 w-fit wrap-break-word text-pretty ${sender.id === user?.id ? 'bg-blue-600' : 'bg-neutral-700'}`}
-							>
-								{body}
-							</div>
+							{message.type === 'system' ? (
+								<div className="text-sm text-neutral-400 italic">{message.body}</div>
+							) : (
+								<>
+									<div className="text-sm text-neutral-400">{message.user.name}</div>
+									<div
+										className={`py-2 px-3 rounded-xl max-w-2/3 w-fit wrap-break-word text-pretty ${message.user.id === currentUser.id ? 'bg-blue-600' : 'bg-neutral-700'}`}
+									>
+										{message.body}
+									</div>
+								</>
+							)}
 						</li>
 					))}
 				</ul>

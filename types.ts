@@ -8,7 +8,13 @@ export type ClientChatMessage = {
 	body: string;
 };
 
-export type ServerChatMessage = {
-	body: string;
-	user: User;
-};
+export type ServerChatMessage =
+	| {
+			type: 'chat';
+			body: string;
+			user: User;
+	  }
+	| {
+			type: 'system';
+			body: string;
+	  };
