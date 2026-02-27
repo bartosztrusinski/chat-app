@@ -73,6 +73,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 							(message.type === 'chat' &&
 								previousMessage?.type === 'chat' &&
 								previousMessage.user.id !== message.user.id) ||
+							index === 0 ||
 							previousMessage?.type === 'system';
 
 						return (
