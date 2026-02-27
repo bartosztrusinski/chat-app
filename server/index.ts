@@ -15,10 +15,18 @@ const CORS_OPTIONS: cors.CorsOptions = {
 	origin: process.env.CLIENT_URL ?? 'http://localhost:5173',
 	methods: ['GET', 'POST'],
 };
+const PENDING_LEAVE_TIMEOUT = 3000;
 
 const app = express();
 const server = createServer(app);
 const io = new Server(server, { cors: CORS_OPTIONS });
+
+const roomUsers = new Map<string, Set<string>>();
+const pendingLeaveTimeouts = new Map<string, NodeJS.Timeout>();
+
+function getLeaveKey(roomId: string, userId: string) {
+	return `${roomId}:${userId}`;
+}
 
 app.use(cors(CORS_OPTIONS));
 
@@ -38,20 +46,53 @@ io.on('connection', (socket) => {
 
 	socket.on(JOIN_ROOM_EVENT, (roomId: string) => {
 		const { user } = socket.handshake.auth;
+		const leaveKey = getLeaveKey(roomId, user.id);
 		socket.join(roomId);
-		socket.to(roomId).emit(JOIN_ROOM_EVENT, {
-			type: 'system',
-			body: `${user.name} has joined the room.`,
-		} satisfies ServerChatMessage);
+
+		const pendingLeaveTimeout = pendingLeaveTimeouts.get(leaveKey);
+
+		if (pendingLeaveTimeout) {
+			clearTimeout(pendingLeaveTimeout);
+			pendingLeaveTimeouts.delete(leaveKey);
+		}
+
+		const users = roomUsers.get(roomId) ?? new Set();
+		const isAbsent = !users.has(user.id);
+
+		if (isAbsent) {
+			users.add(user.id);
+			roomUsers.set(roomId, users);
+			socket.to(roomId).emit(JOIN_ROOM_EVENT, {
+				type: 'system',
+				body: `${user.name} has joined the room.`,
+			} satisfies ServerChatMessage);
+		}
 	});
 
 	socket.on(LEAVE_ROOM_EVENT, (roomId: string) => {
 		const { user } = socket.handshake.auth;
+		const leaveKey = getLeaveKey(roomId, user.id);
 		socket.leave(roomId);
-		socket.to(roomId).emit(LEAVE_ROOM_EVENT, {
-			type: 'system',
-			body: `${user.name} has left the room.`,
-		} satisfies ServerChatMessage);
+
+		const timeoutId = setTimeout(() => {
+			const users = roomUsers.get(roomId);
+
+			if (users?.has(user.id)) {
+				users.delete(user.id);
+				io.to(roomId).emit(LEAVE_ROOM_EVENT, {
+					type: 'system',
+					body: `${user.name} has left the room.`,
+				} satisfies ServerChatMessage);
+			}
+
+			if (users?.size === 0) {
+				roomUsers.delete(roomId);
+			}
+
+			pendingLeaveTimeouts.delete(leaveKey);
+		}, PENDING_LEAVE_TIMEOUT);
+
+		pendingLeaveTimeouts.set(leaveKey, timeoutId);
 	});
 });
 
