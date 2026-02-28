@@ -22,29 +22,50 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	const [chatMessages, setChatMessages] = useState<ServerChatMessage[]>([]);
 	const [inputValue, setInputValue] = useState('');
 	const chatBottom = useRef<HTMLDivElement>(null);
+	const shouldAutoScroll = useRef(true);
 
 	useEffect(() => {
-		function onChatRoomMessageEvent(message: ServerChatMessage) {
-			setChatMessages((prev) => [...prev, message]);
+		const observer = new IntersectionObserver(([entry]) => {
+			shouldAutoScroll.current = entry.isIntersecting;
+		});
+
+		if (chatBottom.current) {
+			observer.observe(chatBottom.current);
 		}
 
-		socket.on(CHAT_MESSAGE_EVENT, onChatRoomMessageEvent);
-		socket.on(JOIN_ROOM_EVENT, onChatRoomMessageEvent);
-		socket.on(LEAVE_ROOM_EVENT, onChatRoomMessageEvent);
-		socket.emit(JOIN_ROOM_EVENT, roomId);
-
 		return () => {
-			socket.off(CHAT_MESSAGE_EVENT, onChatRoomMessageEvent);
-			socket.off(JOIN_ROOM_EVENT, onChatRoomMessageEvent);
-			socket.off(LEAVE_ROOM_EVENT, onChatRoomMessageEvent);
-			socket.emit(LEAVE_ROOM_EVENT, roomId);
+			if (chatBottom.current) {
+				observer.unobserve(chatBottom.current);
+			}
 		};
-	}, [roomId]);
+	}, []);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: trigger effect when messages change to scroll to bottom
 	useEffect(() => {
-		chatBottom.current?.scrollIntoView({ behavior: 'smooth' });
+		if (shouldAutoScroll.current) {
+			chatBottom.current?.scrollIntoView({ behavior: 'smooth' });
+		}
 	}, [chatMessages]);
+
+	useEffect(() => {
+		const eventKeys = [CHAT_MESSAGE_EVENT, JOIN_ROOM_EVENT, LEAVE_ROOM_EVENT] as const;
+
+		function onRoomEvent(message: ServerChatMessage) {
+			setChatMessages((prev) => [...prev, message]);
+		}
+
+		socket.emit(JOIN_ROOM_EVENT, roomId);
+		eventKeys.forEach((event) => {
+			socket.on(event, onRoomEvent);
+		});
+
+		return () => {
+			socket.emit(LEAVE_ROOM_EVENT, roomId);
+			eventKeys.forEach((event) => {
+				socket.off(event, onRoomEvent);
+			});
+		};
+	}, [roomId]);
 
 	function sendChatRoomMessage(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -72,7 +93,8 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 						const showUsername =
 							(message.type === 'chat' &&
 								previousMessage?.type === 'chat' &&
-								previousMessage.user.id !== message.user.id) ||
+								(previousMessage.user.id !== message.user.id ||
+									previousMessage.user.name !== message.user.name)) ||
 							index === 0 ||
 							previousMessage?.type === 'system';
 
