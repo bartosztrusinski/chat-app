@@ -22,12 +22,19 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	const [chatMessages, setChatMessages] = useState<ServerChatMessage[]>([]);
 	const [inputValue, setInputValue] = useState('');
 	const chatBottom = useRef<HTMLDivElement>(null);
-	const shouldAutoScroll = useRef(true);
+	const chatContainer = useRef<HTMLDivElement>(null);
+	const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
 	useEffect(() => {
-		const observer = new IntersectionObserver(([entry]) => {
-			shouldAutoScroll.current = entry.isIntersecting;
-		});
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				setShouldAutoScroll(entry.isIntersecting);
+			},
+			{
+				root: chatContainer.current,
+				rootMargin: '100px',
+			},
+		);
 
 		if (chatBottom.current) {
 			observer.observe(chatBottom.current);
@@ -42,7 +49,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: trigger effect when messages change to scroll to bottom
 	useEffect(() => {
-		if (shouldAutoScroll.current) {
+		if (shouldAutoScroll) {
 			chatBottom.current?.scrollIntoView({ behavior: 'smooth' });
 		}
 	}, [chatMessages]);
@@ -86,7 +93,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				content="A real-time chat application built with React and Socket.IO."
 			/>
 			<h1 className="text-2xl font-bold p-3 border-b border-neutral-800">{roomId}</h1>
-			<section className="grow overflow-y-auto p-3">
+			<section ref={chatContainer} className="grow overflow-y-auto p-3">
 				<ul className="gap-3 flex flex-col">
 					{chatMessages.map((message, index) => {
 						const previousMessage = index > 0 ? chatMessages[index - 1] : null;
@@ -125,6 +132,15 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					})}
 				</ul>
 				<div ref={chatBottom}></div>
+				{!shouldAutoScroll && (
+					<button
+						type="button"
+						className="fixed size-10 bg-neutral-600 text-sm rounded-full bottom-20 left-1/2 -translate-x-1/2 shadow-md cursor-pointer"
+						onClick={() => chatBottom.current?.scrollIntoView({ behavior: 'smooth' })}
+					>
+						🡣
+					</button>
+				)}
 			</section>
 			<section className="p-3 border-t border-neutral-800">
 				<form className="space-x-2" onSubmit={sendChatRoomMessage}>
