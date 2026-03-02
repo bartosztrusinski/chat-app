@@ -19,20 +19,22 @@ export async function clientLoader() {
 export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	const { roomId } = params;
 	const { currentUser } = loaderData;
-	const [chatMessages, setChatMessages] = useState<ServerChatMessage[]>([]);
-	const [inputValue, setInputValue] = useState('');
 	const chatBottom = useRef<HTMLDivElement>(null);
 	const chatContainer = useRef<HTMLDivElement>(null);
-	const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+	const [inputValue, setInputValue] = useState('');
+	const [chatMessages, setChatMessages] = useState<ServerChatMessage[]>([]);
+	const [unreadMessages, setUnreadMessages] = useState<number | null>(null);
+	const isAtBottom = unreadMessages === null;
 
 	useEffect(() => {
 		const observer = new IntersectionObserver(
-			([entry]) => {
-				setShouldAutoScroll(entry.isIntersecting);
-			},
+			([entry]) =>
+				setUnreadMessages((prev) =>
+					entry.isIntersecting ? null : prev === null ? 0 : prev,
+				),
 			{
 				root: chatContainer.current,
-				rootMargin: '100px',
+				rootMargin: '50px',
 			},
 		);
 
@@ -49,7 +51,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: trigger effect when messages change to scroll to bottom
 	useEffect(() => {
-		if (shouldAutoScroll) {
+		if (isAtBottom) {
 			chatBottom.current?.scrollIntoView({ behavior: 'smooth' });
 		}
 	}, [chatMessages]);
@@ -58,6 +60,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 		const eventKeys = [CHAT_MESSAGE_EVENT, JOIN_ROOM_EVENT, LEAVE_ROOM_EVENT] as const;
 
 		function onRoomEvent(message: ServerChatMessage) {
+			setUnreadMessages((prev) => (prev === null ? prev : prev + 1));
 			setChatMessages((prev) => [...prev, message]);
 		}
 
@@ -132,13 +135,20 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					})}
 				</ul>
 				<div ref={chatBottom}></div>
-				{!shouldAutoScroll && (
+				{!isAtBottom && (
 					<button
 						type="button"
 						className="fixed size-10 bg-neutral-600 text-sm rounded-full bottom-20 left-1/2 -translate-x-1/2 shadow-md cursor-pointer"
 						onClick={() => chatBottom.current?.scrollIntoView({ behavior: 'smooth' })}
 					>
-						🡣
+						🡣<span className="sr-only">Scroll to bottom</span>
+						{unreadMessages > 0 && (
+							<span
+								className={`absolute -bottom-1 text-xs px-1 min-w-4 py-0.5 flex place-content-center place-items-center rounded-full bg-blue-500 ${unreadMessages > 99 ? '-right-3' : '-right-1'}`}
+							>
+								{unreadMessages > 99 ? '99+' : unreadMessages}
+							</span>
+						)}
 					</button>
 				)}
 			</section>
