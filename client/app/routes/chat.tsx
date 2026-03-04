@@ -49,12 +49,14 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 		};
 	}, []);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: trigger effect when messages change to scroll to bottom
 	useEffect(() => {
-		if (isAtBottom) {
+		const lastMessage = chatMessages.at(-1);
+		const isLastMessageFromCurrentUser =
+			lastMessage?.type === 'chat' && lastMessage.user.id === currentUser.id;
+		if (isAtBottom || isLastMessageFromCurrentUser) {
 			chatBottom.current?.scrollIntoView({ behavior: 'smooth' });
 		}
-	}, [chatMessages]);
+	}, [chatMessages, currentUser.id, isAtBottom]);
 
 	useEffect(() => {
 		const eventKeys = [CHAT_MESSAGE_EVENT, JOIN_ROOM_EVENT, LEAVE_ROOM_EVENT] as const;
