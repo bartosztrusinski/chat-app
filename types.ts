@@ -18,3 +18,8 @@ export type ServerChatMessage =
 			type: 'system';
 			body: string;
 	  };
+
+export type PendingLeave = {
+	timeoutId: NodeJS.Timeout;
+	username: string;
+};

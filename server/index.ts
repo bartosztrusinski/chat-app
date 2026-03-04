@@ -8,21 +8,21 @@ import {
 	LEAVE_ROOM_EVENT,
 	SET_USER_EVENT,
 } from '../constants';
-import type { ClientChatMessage, ServerChatMessage, User } from '../types';
+import type { ClientChatMessage, PendingLeave, ServerChatMessage, User } from '../types';
 
 const PORT = process.env.PORT ?? 5000;
 const CORS_OPTIONS: cors.CorsOptions = {
 	origin: process.env.CLIENT_URL ?? 'http://localhost:5173',
 	methods: ['GET', 'POST'],
 };
-const PENDING_LEAVE_TIMEOUT = 3000;
+const PENDING_LEAVE_TIMEOUT = 7000;
 
 const app = express();
 const server = createServer(app);
 const io = new Server(server, { cors: CORS_OPTIONS });
 
-const roomUsers = new Map<string, Set<string>>();
-const pendingLeaveTimeouts = new Map<string, NodeJS.Timeout>();
+const activeRoomUsers = new Map<string, Set<string>>();
+const pendingLeaveRequests = new Map<string, PendingLeave>();
 
 function getLeaveKey(roomId: string, userId: string) {
 	return `${roomId}:${userId}`;
@@ -49,19 +49,26 @@ io.on('connection', (socket) => {
 		const leaveKey = getLeaveKey(roomId, user.id);
 		socket.join(roomId);
 
-		const pendingLeaveTimeout = pendingLeaveTimeouts.get(leaveKey);
+		const pendingLeave = pendingLeaveRequests.get(leaveKey);
 
-		if (pendingLeaveTimeout) {
-			clearTimeout(pendingLeaveTimeout);
-			pendingLeaveTimeouts.delete(leaveKey);
+		if (pendingLeave && pendingLeave.username !== user.name) {
+			socket.to(roomId).emit(JOIN_ROOM_EVENT, {
+				type: 'system',
+				body: `${pendingLeave.username} has rejoined the room as ${user.name}.`,
+			} satisfies ServerChatMessage);
 		}
 
-		const users = roomUsers.get(roomId) ?? new Set();
-		const isAbsent = !users.has(user.id);
+		if (pendingLeave) {
+			clearTimeout(pendingLeave.timeoutId);
+			pendingLeaveRequests.delete(leaveKey);
+		}
+
+		const currentRoomUsers = activeRoomUsers.get(roomId) ?? new Set();
+		const isAbsent = !currentRoomUsers.has(user.id);
 
 		if (isAbsent) {
-			users.add(user.id);
-			roomUsers.set(roomId, users);
+			currentRoomUsers.add(user.id);
+			activeRoomUsers.set(roomId, currentRoomUsers);
 			socket.to(roomId).emit(JOIN_ROOM_EVENT, {
 				type: 'system',
 				body: `${user.name} has joined the room.`,
@@ -75,24 +82,24 @@ io.on('connection', (socket) => {
 		socket.leave(roomId);
 
 		const timeoutId = setTimeout(() => {
-			const users = roomUsers.get(roomId);
+			const currentRoomUsers = activeRoomUsers.get(roomId);
 
-			if (users?.has(user.id)) {
-				users.delete(user.id);
+			if (currentRoomUsers?.has(user.id)) {
+				currentRoomUsers.delete(user.id);
 				io.to(roomId).emit(LEAVE_ROOM_EVENT, {
 					type: 'system',
 					body: `${user.name} has left the room.`,
 				} satisfies ServerChatMessage);
 			}
 
-			if (users?.size === 0) {
-				roomUsers.delete(roomId);
+			if (currentRoomUsers?.size === 0) {
+				activeRoomUsers.delete(roomId);
 			}
 
-			pendingLeaveTimeouts.delete(leaveKey);
+			pendingLeaveRequests.delete(leaveKey);
 		}, PENDING_LEAVE_TIMEOUT);
 
-		pendingLeaveTimeouts.set(leaveKey, timeoutId);
+		pendingLeaveRequests.set(leaveKey, { timeoutId, username: user.name });
 	});
 });
 
