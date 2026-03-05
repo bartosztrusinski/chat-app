@@ -1,8 +1,16 @@
-import EmojiPickerReact, { EmojiStyle, type Props, Theme } from 'emoji-picker-react';
+import EmojiPickerReact, {
+	type Props as EmojiPickerProps,
+	EmojiStyle,
+	Theme,
+} from 'emoji-picker-react';
 import { Popover } from 'radix-ui';
 import { useState } from 'react';
 
-export function EmojiPicker({ onEmojiClick }: Props) {
+type Props = EmojiPickerProps & {
+	onCloseAutoFocus?: () => void;
+};
+
+export function EmojiPicker({ onEmojiClick, onCloseAutoFocus }: Props) {
 	const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
 	return (
@@ -11,7 +19,12 @@ export function EmojiPicker({ onEmojiClick }: Props) {
 				{isEmojiPickerOpen ? '😀' : '🙂'}
 			</Popover.Trigger>
 			<Popover.Portal>
-				<Popover.Content>
+				<Popover.Content
+					onCloseAutoFocus={(event) => {
+						event.preventDefault();
+						onCloseAutoFocus?.();
+					}}
+				>
 					<EmojiPickerReact
 						theme={Theme.DARK}
 						lazyLoadEmojis

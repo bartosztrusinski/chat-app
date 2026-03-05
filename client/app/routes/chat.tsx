@@ -22,6 +22,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	const { currentUser } = loaderData;
 	const chatBottom = useRef<HTMLDivElement>(null);
 	const chatContainer = useRef<HTMLDivElement>(null);
+	const inputRef = useRef<HTMLInputElement>(null);
 	const [inputValue, setInputValue] = useState('');
 	const [chatMessages, setChatMessages] = useState<ServerChatMessage[]>([]);
 	const [unreadMessages, setUnreadMessages] = useState<number | null>(null);
@@ -158,9 +159,11 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 			<section className="p-3 border-t border-neutral-800 flex gap-3">
 				<EmojiPicker
 					onEmojiClick={({ emoji }) => setInputValue((prev) => prev + emoji)}
+					onCloseAutoFocus={() => inputRef.current?.focus()}
 				/>
 				<form className="space-x-2 grow" onSubmit={sendChatRoomMessage}>
 					<input
+						ref={inputRef}
 						type="text"
 						placeholder="Message"
 						// biome-ignore lint/a11y/noAutofocus: full page chat app
