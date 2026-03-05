@@ -20,6 +20,7 @@ export function EmojiPicker({ onEmojiClick, onCloseAutoFocus }: Props) {
 			</Popover.Trigger>
 			<Popover.Portal>
 				<Popover.Content
+					align="start"
 					onCloseAutoFocus={(event) => {
 						event.preventDefault();
 						onCloseAutoFocus?.();
