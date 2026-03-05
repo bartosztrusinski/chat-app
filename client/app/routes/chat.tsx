@@ -2,6 +2,7 @@ import { type SubmitEvent, useEffect, useRef, useState } from 'react';
 import { redirect } from 'react-router';
 import { CHAT_MESSAGE_EVENT, JOIN_ROOM_EVENT, LEAVE_ROOM_EVENT } from '~/../../constants';
 import type { ClientChatMessage, ServerChatMessage } from '~/../../types';
+import { EmojiPicker } from '~/components/emoji-picker';
 import { socket } from '~/socket';
 import { getUser } from '~/user';
 import type { Route } from './+types/chat';
@@ -154,8 +155,11 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					</button>
 				)}
 			</section>
-			<section className="p-3 border-t border-neutral-800">
-				<form className="space-x-2" onSubmit={sendChatRoomMessage}>
+			<section className="p-3 border-t border-neutral-800 flex gap-3">
+				<EmojiPicker
+					onEmojiClick={({ emoji }) => setInputValue((prev) => prev + emoji)}
+				/>
+				<form className="space-x-2 grow" onSubmit={sendChatRoomMessage}>
 					<input
 						type="text"
 						placeholder="Message"
