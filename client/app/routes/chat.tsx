@@ -156,12 +156,12 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					</button>
 				)}
 			</section>
-			<section className="p-3 border-t border-neutral-800 flex gap-3">
+			<section className="p-2 border-t border-neutral-800 flex gap-2">
 				<EmojiPicker
 					onEmojiClick={({ emoji }) => setInputValue((prev) => prev + emoji)}
 					onCloseAutoFocus={() => inputRef.current?.focus()}
 				/>
-				<form className="space-x-2 grow" onSubmit={sendChatRoomMessage}>
+				<form className="grow" onSubmit={sendChatRoomMessage}>
 					<input
 						ref={inputRef}
 						type="text"

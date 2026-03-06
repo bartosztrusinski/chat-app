@@ -4,7 +4,7 @@ import EmojiPickerReact, {
 	Theme,
 } from 'emoji-picker-react';
 import { Popover } from 'radix-ui';
-import { useState } from 'react';
+import { type CSSProperties, useState } from 'react';
 
 type Props = EmojiPickerProps & {
 	onCloseAutoFocus?: () => void;
@@ -15,7 +15,7 @@ export function EmojiPicker({ onEmojiClick, onCloseAutoFocus }: Props) {
 
 	return (
 		<Popover.Root open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
-			<Popover.Trigger className="cursor-pointer text-3xl aspect-square">
+			<Popover.Trigger className="cursor-pointer text-2xl aspect-square rounded-xl aria-expanded:bg-neutral-700">
 				{isEmojiPickerOpen ? '😀' : '🙂'}
 			</Popover.Trigger>
 			<Popover.Portal>
@@ -28,11 +28,25 @@ export function EmojiPicker({ onEmojiClick, onCloseAutoFocus }: Props) {
 				>
 					<EmojiPickerReact
 						theme={Theme.DARK}
-						lazyLoadEmojis
 						emojiStyle={EmojiStyle.NATIVE}
+						width={330}
+						height={450}
+						lazyLoadEmojis
 						skinTonesDisabled
 						previewConfig={{ showPreview: false }}
 						onEmojiClick={onEmojiClick}
+						style={
+							{
+								'--epr-bg-color': 'var(--color-neutral-800)',
+								'--epr-category-label-bg-color':
+									'color-mix(in oklab, var(--color-neutral-800) 90%, transparent)',
+								'--epr-category-label-text-color': 'var(--color-neutral-200)',
+								'--epr-search-input-bg-color': 'var(--color-neutral-700)',
+								'--epr-search-input-bg-color-active': 'var(--color-neutral-700)',
+								'--epr-search-input-text-color': 'inherit',
+								'--epr-emoji-size': '1.75em',
+							} as CSSProperties
+						}
 					/>
 					<Popover.Arrow />
 				</Popover.Content>
