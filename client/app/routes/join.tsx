@@ -41,71 +41,58 @@ export default function Join() {
 	}
 
 	return (
-		<div className="space-y-8 p-4">
+		<main className="py-10 w-72 mx-auto">
 			<title>Chat App</title>
 			<meta
 				name="description"
 				content="A real-time chat application built with React and Socket.IO."
 			/>
-			<h1 className="text-2xl font-bold">Chat App</h1>
-
-			<section className="space-x-2">
-				<p className="pb-2">
-					{isConnected ? 'Connected to the server!' : 'Disconnected from the server'}
-				</p>
-				<button
-					type="button"
-					onClick={() => socket.disconnect()}
-					disabled={!isConnected}
-					className="bg-neutral-50 text-neutral-900 rounded p-2 disabled:opacity-50 disabled:cursor-not-allowed"
-				>
-					Disconnect
-				</button>
-				<button
-					type="button"
-					onClick={() => socket.connect()}
-					disabled={isConnected}
-					className="bg-neutral-50 text-neutral-900 rounded p-2 disabled:opacity-50 disabled:cursor-not-allowed"
-				>
-					Reconnect
-				</button>
-			</section>
-
-			<section>
-				<form className="flex flex-col items-start gap-2" onSubmit={joinChatRoom}>
-					<label htmlFor="room-id">Room ID:</label>
+			<h1 className="text-4xl font-black text-center">Chat App</h1>
+			<p className="text-center mt-2 text-balance text-neutral-400">
+				Join a chat room and start chatting with others in real-time!
+			</p>
+			<form className="space-y-4 mt-12" onSubmit={joinChatRoom}>
+				<div>
+					<label htmlFor="room-id" className="ml-2">
+						Room ID
+					</label>
 					<input
 						id="room-id"
 						type="text"
 						required
 						minLength={1}
 						maxLength={24}
-						className="border rounded p-2"
+						className="rounded-2xl w-full mt-1 px-4 py-2 border bg-neutral-900 border-neutral-800 inset-shadow-2xs"
 						value={roomId}
 						onChange={(event) => setRoomId(event.target.value)}
 					/>
-					<label htmlFor="username">Username:</label>
+				</div>
+				<div>
+					<label htmlFor="username" className="ml-2">
+						Username
+					</label>
 					<input
 						id="username"
 						type="text"
 						required
 						minLength={1}
 						maxLength={24}
-						className="border rounded p-2"
+						autoComplete="username"
+						className="rounded-2xl w-full mt-1 px-4 py-2 border bg-neutral-900 border-neutral-800 inset-shadow-2xs"
 						value={username}
 						onChange={(event) => setUsername(event.target.value)}
 					/>
-					<button
-						type="submit"
-						disabled={
-							roomId.trim().length === 0 || username.trim().length === 0 || !isConnected
-						}
-						className="bg-neutral-50 text-neutral-900 rounded p-2 disabled:opacity-50 disabled:cursor-not-allowed"
-					>
-						Join Chat
-					</button>
-				</form>
-			</section>
-		</div>
+				</div>
+				<button
+					type="submit"
+					disabled={
+						roomId.trim().length === 0 || username.trim().length === 0 || !isConnected
+					}
+					className="text-neutral-900 w-full font-medium bg-neutral-200 rounded-xl mt-3 p-3 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 outline-offset-2 outline-neutral-50 cursor-pointer"
+				>
+					Join Chat
+				</button>
+			</form>
+		</main>
 	);
 }

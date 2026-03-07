@@ -30,11 +30,7 @@
 
 html,
 body {
-	@apply bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100;
-
-	@media (prefers-color-scheme: dark) {
-		color-scheme: dark;
-	}
+	@apply dark:bg-neutral-950 dark:text-neutral-100 selection:bg-indigo-700 selection:text-neutral-50 dark:scheme-dark;
 }
 
 .epr-body {
