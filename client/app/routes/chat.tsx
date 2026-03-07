@@ -36,7 +36,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				),
 			{
 				root: chatContainer.current,
-				rootMargin: '50px',
+				rootMargin: '100px',
 			},
 		);
 
@@ -55,10 +55,10 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 		const lastMessage = chatMessages.at(-1);
 		const isLastMessageFromCurrentUser =
 			lastMessage?.type === 'chat' && lastMessage.user.id === currentUser.id;
-		if (isAtBottom || isLastMessageFromCurrentUser) {
+		if (isAtBottom || (unreadMessages > 0 && isLastMessageFromCurrentUser)) {
 			chatBottom.current?.scrollIntoView({ behavior: 'smooth' });
 		}
-	}, [chatMessages, currentUser.id, isAtBottom]);
+	}, [chatMessages, currentUser.id, isAtBottom, unreadMessages]);
 
 	useEffect(() => {
 		const eventKeys = [CHAT_MESSAGE_EVENT, JOIN_ROOM_EVENT, LEAVE_ROOM_EVENT] as const;
@@ -99,7 +99,9 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				name="description"
 				content="A real-time chat application built with React and Socket.IO."
 			/>
-			<h1 className="text-2xl font-bold p-3 border-b border-neutral-800">{roomId}</h1>
+			<h1 className="text-2xl font-bold p-2 px-3 border-b border-neutral-800">
+				{roomId}
+			</h1>
 			<section ref={chatContainer} className="grow overflow-y-auto p-3">
 				<ul className="gap-3 flex flex-col">
 					{chatMessages.map((message, index) => {
@@ -148,7 +150,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 						🡣<span className="sr-only">Scroll to bottom</span>
 						{unreadMessages > 0 && (
 							<span
-								className={`absolute -bottom-1 text-xs px-1 min-w-4 py-0.5 flex place-content-center place-items-center rounded-full bg-blue-500 ${unreadMessages > 99 ? '-right-3' : '-right-1'}`}
+								className={`absolute -bottom-1 text-xs px-1 min-w-4 py-0.5 flex place-content-center place-items-center rounded-full bg-blue-600 ${unreadMessages > 99 ? '-right-3' : '-right-1'}`}
 							>
 								{unreadMessages > 99 ? '99+' : unreadMessages}
 							</span>
