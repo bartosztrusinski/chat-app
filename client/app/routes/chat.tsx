@@ -22,7 +22,8 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	const { currentUser } = loaderData;
 	const chatBottom = useRef<HTMLDivElement>(null);
 	const chatContainer = useRef<HTMLDivElement>(null);
-	const inputRef = useRef<HTMLInputElement>(null);
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const formRef = useRef<HTMLFormElement>(null);
 	const [inputValue, setInputValue] = useState('');
 	const [chatMessages, setChatMessages] = useState<ServerChatMessage[]>([]);
 	const [unreadMessages, setUnreadMessages] = useState<number | null>(null);
@@ -36,14 +37,13 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				),
 			{
 				root: chatContainer.current,
-				rootMargin: '100px',
+				rootMargin: '240px',
 			},
 		);
 
 		if (chatBottom.current) {
 			observer.observe(chatBottom.current);
 		}
-
 		return () => {
 			if (chatBottom.current) {
 				observer.unobserve(chatBottom.current);
@@ -51,14 +51,16 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 		};
 	}, []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: other dependencies change when chatMessages do, and cause unwanted behavior if added to the dependency array
 	useEffect(() => {
 		const lastMessage = chatMessages.at(-1);
 		const isLastMessageFromCurrentUser =
 			lastMessage?.type === 'chat' && lastMessage.user.id === currentUser.id;
+
 		if (isAtBottom || (unreadMessages > 0 && isLastMessageFromCurrentUser)) {
 			chatBottom.current?.scrollIntoView({ behavior: 'smooth' });
 		}
-	}, [chatMessages, currentUser.id, isAtBottom, unreadMessages]);
+	}, [chatMessages, currentUser.id]);
 
 	useEffect(() => {
 		const eventKeys = [CHAT_MESSAGE_EVENT, JOIN_ROOM_EVENT, LEAVE_ROOM_EVENT] as const;
@@ -102,7 +104,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 			<h1 className="text-2xl font-bold p-2 px-3 border-b border-neutral-800">
 				{roomId}
 			</h1>
-			<section ref={chatContainer} className="grow overflow-y-auto p-3">
+			<section ref={chatContainer} className="relative grow overflow-y-auto p-3">
 				<ul className="gap-3 flex flex-col">
 					{chatMessages.map((message, index) => {
 						const previousMessage = index > 0 ? chatMessages[index - 1] : null;
@@ -144,7 +146,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				{!isAtBottom && (
 					<button
 						type="button"
-						className="fixed size-10 bg-neutral-600 text-sm rounded-full bottom-20 left-1/2 -translate-x-1/2 shadow-md cursor-pointer"
+						className="sticky size-10 bg-neutral-600 text-sm rounded-full bottom-0 left-1/2 -translate-x-1/2 shadow-md cursor-pointer"
 						onClick={() => chatBottom.current?.scrollIntoView({ behavior: 'smooth' })}
 					>
 						🡣<span className="sr-only">Scroll to bottom</span>
@@ -158,21 +160,29 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					</button>
 				)}
 			</section>
-			<section className="p-2 border-t border-neutral-800 flex gap-2">
+			<section className="p-2 border-t border-neutral-800 flex items-center gap-2">
 				<EmojiPicker
 					onEmojiClick={({ emoji }) => setInputValue((prev) => prev + emoji)}
-					onCloseAutoFocus={() => inputRef.current?.focus()}
+					onCloseAutoFocus={() => textareaRef.current?.focus()}
 				/>
-				<form className="grow" onSubmit={sendChatRoomMessage}>
-					<input
-						ref={inputRef}
-						type="text"
+				<form ref={formRef} className="grow" onSubmit={sendChatRoomMessage}>
+					<textarea
+						ref={textareaRef}
+						aria-label="Message"
 						placeholder="Message"
+						maxLength={128}
+						rows={1}
 						// biome-ignore lint/a11y/noAutofocus: full page chat app
 						autoFocus
-						className="rounded-2xl w-full px-4 py-2 bg-neutral-700"
+						className="block rounded-2xl w-full px-4 py-2 bg-neutral-700 field-sizing-content resize-none text-wrap wrap-anywhere overflow-x-hidden"
 						value={inputValue}
 						onChange={(event) => setInputValue(event.target.value)}
+						onKeyDown={(event) => {
+							if (event.key === 'Enter') {
+								event.preventDefault();
+								formRef.current?.requestSubmit();
+							}
+						}}
 					/>
 				</form>
 			</section>
