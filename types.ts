@@ -1,14 +1,9 @@
-export type User = {
-	id: string;
-	name: string;
-};
-
-export type ClientChatMessage = {
+type ClientToServerChatMessage = {
 	roomId: string;
 	body: string;
 };
 
-export type ServerChatMessage =
+export type ServerToClientChatMessage =
 	| {
 			type: 'chat';
 			body: string;
@@ -19,7 +14,20 @@ export type ServerChatMessage =
 			body: string;
 	  };
 
-export type PendingLeave = {
-	timeoutId: NodeJS.Timeout;
-	username: string;
+export type User = {
+	id: string;
+	name: string;
+};
+
+export type ServerToClientEvents = {
+	chatMessage: (message: ServerToClientChatMessage) => void;
+	joinRoom: (message: ServerToClientChatMessage) => void;
+	leaveRoom: (message: ServerToClientChatMessage) => void;
+};
+
+export type ClientToServerEvents = {
+	chatMessage: (message: ClientToServerChatMessage) => void;
+	setUser: (user: User) => void;
+	joinRoom: (roomId: string) => void;
+	leaveRoom: (roomId: string) => void;
 };

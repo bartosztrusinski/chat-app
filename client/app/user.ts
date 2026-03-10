@@ -1,5 +1,4 @@
 import { socket } from '~/socket';
-import { SET_USER_EVENT } from '../../constants';
 import type { User } from '../../types';
 
 const USER_KEY = 'user';
@@ -25,7 +24,7 @@ export function updateUser(name: string) {
 
 	try {
 		sessionStorage.setItem(USER_KEY, JSON.stringify(user));
-		socket.timeout(2000).emit(SET_USER_EVENT, user);
+		socket.timeout(2000).emit('setUser', user);
 	} catch (error) {
 		console.error('Failed to update user:', error);
 	}

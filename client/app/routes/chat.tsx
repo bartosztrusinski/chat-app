@@ -1,7 +1,6 @@
 import { type SubmitEvent, useEffect, useRef, useState } from 'react';
 import { redirect } from 'react-router';
-import { CHAT_MESSAGE_EVENT, JOIN_ROOM_EVENT, LEAVE_ROOM_EVENT } from '~/../../constants';
-import type { ClientChatMessage, ServerChatMessage } from '~/../../types';
+import type { ClientToServerEvents, ServerToClientChatMessage } from '~/../../types';
 import { EmojiPicker } from '~/components/emoji-picker';
 import { socket } from '~/socket';
 import { getUser } from '~/user';
@@ -25,7 +24,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const formRef = useRef<HTMLFormElement>(null);
 	const [inputValue, setInputValue] = useState('');
-	const [chatMessages, setChatMessages] = useState<ServerChatMessage[]>([]);
+	const [chatMessages, setChatMessages] = useState<ServerToClientChatMessage[]>([]);
 	const [unreadMessages, setUnreadMessages] = useState<number | null>(null);
 	const isAtBottom = unreadMessages === null;
 
@@ -63,22 +62,26 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	}, [chatMessages, currentUser.id]);
 
 	useEffect(() => {
-		const eventKeys = [CHAT_MESSAGE_EVENT, JOIN_ROOM_EVENT, LEAVE_ROOM_EVENT] as const;
+		const eventKeys = [
+			'chatMessage',
+			'joinRoom',
+			'leaveRoom',
+		] satisfies (keyof ClientToServerEvents)[];
 
-		function onRoomEvent(message: ServerChatMessage) {
+		function onRoomEvent(message: ServerToClientChatMessage) {
 			setUnreadMessages((prev) => (prev === null ? prev : prev + 1));
 			setChatMessages((prev) => [...prev, message]);
 		}
 
-		socket.emit(JOIN_ROOM_EVENT, roomId);
-		eventKeys.forEach((event) => {
-			socket.on(event, onRoomEvent);
+		socket.emit('joinRoom', roomId);
+		eventKeys.forEach((eventKey) => {
+			socket.on(eventKey, onRoomEvent);
 		});
 
 		return () => {
-			socket.emit(LEAVE_ROOM_EVENT, roomId);
-			eventKeys.forEach((event) => {
-				socket.off(event, onRoomEvent);
+			socket.emit('leaveRoom', roomId);
+			eventKeys.forEach((eventKey) => {
+				socket.off(eventKey, onRoomEvent);
 			});
 		};
 	}, [roomId]);
@@ -86,10 +89,10 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	function sendChatRoomMessage(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
 		if (inputValue.trim().length > 0) {
-			socket.timeout(2000).emit(CHAT_MESSAGE_EVENT, {
+			socket.timeout(2000).emit('chatMessage', {
 				roomId,
 				body: inputValue,
-			} satisfies ClientChatMessage);
+			});
 			setInputValue('');
 		}
 	}
