@@ -104,11 +104,11 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				name="description"
 				content="A real-time chat application built with React and Socket.IO."
 			/>
-			<h1 className="text-2xl font-bold p-2 px-3 border-b border-neutral-800">
-				{roomId}
-			</h1>
-			<section ref={chatContainer} className="relative grow overflow-y-auto p-3">
-				<ul className="gap-3 flex flex-col">
+			<section ref={chatContainer} className="relative grow overflow-y-auto">
+				<h1 className="text-2xl font-bold p-2 px-3 border-b border-neutral-800/80 bg-neutral-900/70 backdrop-blur-md sticky top-0 z-10">
+					{roomId}
+				</h1>
+				<ul className="gap-3 flex flex-col p-3">
 					{chatMessages.map((message, index) => {
 						const previousMessage = index > 0 ? chatMessages[index - 1] : null;
 						const showUsername =
@@ -149,13 +149,13 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				{!isAtBottom && (
 					<button
 						type="button"
-						className="sticky size-10 bg-neutral-600 text-sm rounded-full bottom-0 left-1/2 -translate-x-1/2 shadow-md cursor-pointer"
+						className="sticky size-10 bg-neutral-600 text-sm rounded-full bottom-3 left-1/2 -translate-x-1/2 shadow-md cursor-pointer"
 						onClick={() => chatBottom.current?.scrollIntoView({ behavior: 'smooth' })}
 					>
 						🡣<span className="sr-only">Scroll to bottom</span>
 						{unreadMessages > 0 && (
 							<span
-								className={`absolute -bottom-1 text-xs px-1 min-w-4 py-0.5 flex place-content-center place-items-center rounded-full bg-blue-600 ${unreadMessages > 99 ? '-right-3' : '-right-1'}`}
+								className={`absolute -bottom-1 text-xs px-1 min-w-4 py-0.5 flex place-content-center place-items-center rounded-full bg-blue-500 ${unreadMessages > 99 ? '-right-3' : '-right-1'}`}
 							>
 								{unreadMessages > 99 ? '99+' : unreadMessages}
 							</span>
