@@ -45,7 +45,7 @@ export default function Join() {
 			<title>Chat App</title>
 			<meta
 				name="description"
-				content="A real-time chat application built with React and Socket.IO."
+				content="A real-time chat application built with React and Socket.IO. Join the conversation and chat with others in real-time!"
 			/>
 			<h1 className="text-4xl font-black text-center">Chat App</h1>
 			<p className="text-center mt-2 text-balance text-neutral-400">

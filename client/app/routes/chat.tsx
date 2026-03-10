@@ -99,10 +99,10 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 
 	return (
 		<div className="max-w-lg h-dvh mx-auto flex flex-col bg-neutral-900 border border-neutral-800">
-			<title>Chat App</title>
+			<title>{roomId} room | Chat App</title>
 			<meta
 				name="description"
-				content="A real-time chat application built with React and Socket.IO."
+				content={`${roomId} chat room. A real-time chat application built with React and Socket.IO. Join the conversation and chat with others in real-time!`}
 			/>
 			<section ref={chatContainer} className="relative grow overflow-y-auto">
 				<h1 className="text-2xl font-bold p-2 px-3 border-b border-neutral-800/80 bg-neutral-900/70 backdrop-blur-md sticky top-0 z-10">
