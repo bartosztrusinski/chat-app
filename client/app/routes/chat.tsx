@@ -105,9 +105,9 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				content={`${roomId} chat room. A real-time chat application built with React and Socket.IO. Join the conversation and chat with others in real-time!`}
 			/>
 			<section ref={chatContainer} className="relative grow overflow-y-auto">
-				<h1 className="text-2xl font-bold p-2 px-3 border-b border-neutral-800/80 bg-neutral-900/70 backdrop-blur-md sticky top-0 z-10">
-					{roomId}
-				</h1>
+				<header className="sticky top-0 z-10 border-b border-neutral-800/80 bg-neutral-900/70 backdrop-blur-md">
+					<h1 className="text-2xl font-bold p-2 px-3">{roomId}</h1>
+				</header>
 				<ul
 					className="gap-3 flex flex-col p-3"
 					role="log"
@@ -132,19 +132,17 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 								className={`flex flex-col gap-1 ${message.type === 'system' ? 'items-center' : message.user.id === currentUser.id ? 'items-end' : 'justify-start'}`}
 							>
 								{message.type === 'system' ? (
-									<div className="text-sm text-neutral-400 italic">{message.body}</div>
+									<p className="text-sm text-neutral-400 italic">{message.body}</p>
 								) : (
 									<>
 										{showUsername && (
-											<div className="text-sm text-neutral-400 px-1">
-												{message.user.name}
-											</div>
+											<p className="text-sm text-neutral-400 px-1">{message.user.name}</p>
 										)}
-										<div
+										<p
 											className={`py-2 px-3 rounded-xl max-w-2/3 w-fit wrap-break-word text-pretty ${message.user.id === currentUser.id ? 'bg-blue-600' : 'bg-neutral-700'}`}
 										>
 											{message.body}
-										</div>
+										</p>
 									</>
 								)}
 							</li>
@@ -169,7 +167,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					</button>
 				)}
 			</section>
-			<section className="p-2 border-t border-neutral-800 flex items-center gap-2">
+			<footer className="p-2 border-t border-neutral-800 flex items-center gap-2">
 				<EmojiPicker
 					onEmojiClick={({ emoji }) => setInputValue((prev) => prev + emoji)}
 					onCloseAutoFocus={() => textareaRef.current?.focus()}
@@ -194,7 +192,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 						}}
 					/>
 				</form>
-			</section>
+			</footer>
 		</main>
 	);
 }
