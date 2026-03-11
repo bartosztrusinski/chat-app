@@ -98,7 +98,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	}
 
 	return (
-		<div className="max-w-lg h-dvh mx-auto flex flex-col bg-neutral-900 border border-neutral-800">
+		<main className="max-w-lg h-dvh mx-auto flex flex-col bg-neutral-900 border border-neutral-800">
 			<title>{roomId} room | Chat App</title>
 			<meta
 				name="description"
@@ -108,7 +108,13 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				<h1 className="text-2xl font-bold p-2 px-3 border-b border-neutral-800/80 bg-neutral-900/70 backdrop-blur-md sticky top-0 z-10">
 					{roomId}
 				</h1>
-				<ul className="gap-3 flex flex-col p-3">
+				<ul
+					className="gap-3 flex flex-col p-3"
+					role="log"
+					aria-live="polite"
+					aria-relevant="additions text"
+					aria-label={`Messages in room ${roomId}`}
+				>
 					{chatMessages.map((message, index) => {
 						const previousMessage = index > 0 ? chatMessages[index - 1] : null;
 						const showUsername =
@@ -189,6 +195,6 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					/>
 				</form>
 			</section>
-		</div>
+		</main>
 	);
 }

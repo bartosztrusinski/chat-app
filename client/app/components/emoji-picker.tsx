@@ -15,8 +15,14 @@ export function EmojiPicker({ onEmojiClick, onCloseAutoFocus }: Props) {
 
 	return (
 		<Popover.Root open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
-			<Popover.Trigger className="cursor-pointer text-2xl size-10 rounded-xl aria-expanded:bg-neutral-700 shrink-0">
-				{isEmojiPickerOpen ? '😀' : '🙂'}
+			<Popover.Trigger
+				title={isEmojiPickerOpen ? 'Close emoji picker' : 'Open emoji picker'}
+				className="cursor-pointer text-2xl size-10 rounded-xl aria-expanded:bg-neutral-700 shrink-0"
+			>
+				<span aria-hidden="true">{isEmojiPickerOpen ? '😀' : '🙂'}</span>
+				<span className="sr-only">
+					{isEmojiPickerOpen ? 'Close emoji picker' : 'Open emoji picker'}
+				</span>
 			</Popover.Trigger>
 			<Popover.Portal>
 				<Popover.Content

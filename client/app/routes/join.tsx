@@ -51,6 +51,14 @@ export default function Join() {
 			<p className="text-center mt-2 text-balance text-neutral-400">
 				Join a chat room and start chatting with others in real-time!
 			</p>
+			<p
+				id="connection-status"
+				aria-live="polite"
+				aria-atomic="true"
+				className="text-center mt-4 text-sm text-neutral-300"
+			>
+				{isConnected ? 'Connected' : 'Disconnected. Reconnecting...'}
+			</p>
 			<form className="space-y-4 mt-12" onSubmit={joinChatRoom}>
 				<div>
 					<label htmlFor="room-id" className="ml-2">
@@ -85,6 +93,7 @@ export default function Join() {
 				</div>
 				<button
 					type="submit"
+					aria-describedby="connection-status"
 					disabled={
 						roomId.trim().length === 0 || username.trim().length === 0 || !isConnected
 					}
