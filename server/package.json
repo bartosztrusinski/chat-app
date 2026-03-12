@@ -1,7 +1,7 @@
 {
 	"private": true,
 	"scripts": {
-		"build": "tsc",
+		"build": "pnpm install && tsc",
 		"start": "node index.js",
 		"dev": "nodemon index.ts"
 	},
