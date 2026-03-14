@@ -30,7 +30,7 @@
 
 html,
 body {
-	@apply dark:bg-neutral-950 dark:text-neutral-100 selection:bg-indigo-700 selection:text-neutral-50 dark:scheme-dark;
+	@apply h-dvh overscroll-none dark:bg-neutral-950 dark:text-neutral-100 selection:bg-indigo-700 selection:text-neutral-50 dark:scheme-dark;
 }
 
 .epr-body {

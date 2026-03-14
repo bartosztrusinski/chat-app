@@ -98,13 +98,17 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	}
 
 	return (
-		<main className="max-w-lg h-dvh mx-auto flex flex-col bg-neutral-900 border border-neutral-800">
+		<main className="h-full max-w-lg mx-auto flex flex-col bg-neutral-900 border border-neutral-800">
 			<title>{roomId} room | Chat App</title>
 			<meta
 				name="description"
 				content={`${roomId} chat room. A real-time chat application built with React and Socket.IO. Join the conversation and chat with others in real-time!`}
 			/>
-			<section ref={chatContainer} className="relative grow overflow-y-auto">
+
+			<section
+				ref={chatContainer}
+				className="relative grow shrink overflow-y-auto overscroll-contain"
+			>
 				<header className="sticky top-0 z-10 border-b border-neutral-800/80 bg-neutral-900/70 backdrop-blur-md">
 					<h1 className="text-2xl font-bold p-2 px-3">{roomId}</h1>
 				</header>
@@ -167,7 +171,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					</button>
 				)}
 			</section>
-			<footer className="p-2 border-t border-neutral-800 flex items-center gap-2">
+			<footer className="p-2 border-t border-neutral-800 flex items-center gap-2 bg-neutral-900">
 				<EmojiPicker
 					onEmojiClick={({ emoji }) => setInputValue((prev) => prev + emoji)}
 					onCloseAutoFocus={() => textareaRef.current?.focus()}
@@ -179,8 +183,6 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 						placeholder="Message"
 						maxLength={128}
 						rows={1}
-						// biome-ignore lint/a11y/noAutofocus: full page chat app
-						autoFocus
 						className="block rounded-2xl w-full px-4 py-2 bg-neutral-700 field-sizing-content resize-none text-wrap wrap-anywhere overflow-x-hidden"
 						value={inputValue}
 						onChange={(event) => setInputValue(event.target.value)}

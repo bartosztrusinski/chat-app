@@ -41,7 +41,7 @@ export default function Join() {
 	}
 
 	return (
-		<main className="py-10 w-72 mx-auto min-h-screen flex flex-col">
+		<main className="py-10 w-72 mx-auto h-full flex flex-col">
 			<div>
 				<title>Chat App</title>
 				<meta
