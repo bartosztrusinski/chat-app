@@ -71,7 +71,7 @@ export default function Join() {
 							required
 							minLength={1}
 							maxLength={24}
-							className="rounded-2xl w-full mt-1 px-4 py-2 border bg-neutral-900 border-neutral-800 inset-shadow-2xs"
+							className="rounded-2xl w-full mt-1 px-4 py-2 border bg-neutral-900 border-neutral-800 inset-shadow-2xs focus-visible:outline-2 focus-visible:outline-neutral-50"
 							value={roomId}
 							onChange={(event) => setRoomId(event.target.value)}
 						/>
@@ -87,7 +87,7 @@ export default function Join() {
 							minLength={1}
 							maxLength={24}
 							autoComplete="username"
-							className="rounded-2xl w-full mt-1 px-4 py-2 border bg-neutral-900 border-neutral-800 inset-shadow-2xs"
+							className="rounded-2xl w-full mt-1 px-4 py-2 border bg-neutral-900 border-neutral-800 inset-shadow-2xs focus-visible:outline-2 focus-visible:outline-neutral-50"
 							value={username}
 							onChange={(event) => setUsername(event.target.value)}
 						/>

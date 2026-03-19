@@ -191,7 +191,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 						placeholder="Message"
 						maxLength={128}
 						rows={1}
-						className="block rounded-2xl w-full px-4 py-2 bg-neutral-700 field-sizing-content resize-none text-wrap wrap-anywhere overflow-x-hidden"
+						className="block rounded-2xl w-full px-4 py-2 bg-neutral-700 field-sizing-content resize-none text-wrap wrap-anywhere overflow-x-hidden focus-visible:outline-2 focus-visible:outline-neutral-50"
 						value={inputValue}
 						onChange={(event) => setInputValue(event.target.value)}
 						onKeyDown={(event) => {
