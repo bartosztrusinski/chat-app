@@ -3,6 +3,8 @@ import { redirect } from 'react-router';
 import type { ClientToServerEvents, ServerToClientChatMessage } from '~/../../types';
 import { EmojiPicker } from '~/components/emoji-picker';
 import { socket } from '~/socket';
+import { useOnScreenKeyboardScrollFix } from '~/use-on-screen-keyboard-scroll-fix';
+import { useViewportSize } from '~/use-viewport-size';
 import { getUser } from '~/user';
 import type { Route } from './+types/chat';
 
@@ -27,6 +29,9 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	const [chatMessages, setChatMessages] = useState<ServerToClientChatMessage[]>([]);
 	const [unreadMessages, setUnreadMessages] = useState<number | null>(null);
 	const isAtBottom = unreadMessages === null;
+	const viewportSize = useViewportSize();
+
+	useOnScreenKeyboardScrollFix();
 
 	useEffect(() => {
 		const observer = new IntersectionObserver(
@@ -98,7 +103,10 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	}
 
 	return (
-		<main className="h-full max-w-lg mx-auto flex flex-col bg-neutral-900 border border-neutral-800">
+		<main
+			className="transition-[height] duration-100 h-full max-w-lg mx-auto flex flex-col bg-neutral-900 border border-neutral-800"
+			style={{ height: viewportSize?.[1] }}
+		>
 			<title>{roomId} room | Chat App</title>
 			<meta
 				name="description"
