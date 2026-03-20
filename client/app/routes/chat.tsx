@@ -201,7 +201,11 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 						/>
 					</Suspense>
 				)}
-				<form ref={formRef} className="grow" onSubmit={sendChatRoomMessage}>
+				<form
+					ref={formRef}
+					className="grow flex items-center gap-2"
+					onSubmit={sendChatRoomMessage}
+				>
 					<textarea
 						ref={textareaRef}
 						aria-label="Message"
@@ -218,6 +222,11 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 							}
 						}}
 					/>
+					{isTouchDevice && (
+						<button type="submit" className="size-10 shrink-0 rounded-full bg-blue-600">
+							➤<span className="sr-only">Send message</span>
+						</button>
+					)}
 				</form>
 			</footer>
 		</main>
