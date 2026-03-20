@@ -1,13 +1,18 @@
-import { type SubmitEvent, useEffect, useRef, useState } from 'react';
+import { lazy, type SubmitEvent, Suspense, useEffect, useRef, useState } from 'react';
 import { redirect } from 'react-router';
 import type { ClientToServerEvents, ServerToClientChatMessage } from '~/../../types';
-import { EmojiPicker } from '~/components/emoji-picker';
 import { socket } from '~/socket';
 import { useIsTouchDevice } from '~/use-is-touch-device';
 import { useOnScreenKeyboardScrollFix } from '~/use-on-screen-keyboard-scroll-fix';
 import { useViewportSize } from '~/use-viewport-size';
 import { getUser } from '~/user';
 import type { Route } from './+types/chat';
+
+const EmojiPicker = lazy(() =>
+	import('~/components/emoji-picker').then((module) => ({
+		default: module.EmojiPicker,
+	})),
+);
 
 export async function clientLoader() {
 	const currentUser = getUser();
@@ -182,11 +187,19 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				)}
 			</section>
 			<footer className="p-2 border-t border-neutral-800 flex items-center gap-2 bg-neutral-900">
-				{!isTouchDevice && (
-					<EmojiPicker
-						onEmojiClick={({ emoji }) => setInputValue((prev) => prev + emoji)}
-						onCloseAutoFocus={() => textareaRef.current?.focus()}
-					/>
+				{isTouchDevice === false && (
+					<Suspense
+						fallback={
+							<div className="text-2xl size-10 flex gap-0 justify-center items-center">
+								🙂
+							</div>
+						}
+					>
+						<EmojiPicker
+							onEmojiClick={({ emoji }) => setInputValue((prev) => prev + emoji)}
+							onCloseAutoFocus={() => textareaRef.current?.focus()}
+						/>
+					</Suspense>
 				)}
 				<form ref={formRef} className="grow" onSubmit={sendChatRoomMessage}>
 					<textarea
