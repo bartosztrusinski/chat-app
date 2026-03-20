@@ -3,6 +3,7 @@ import { redirect } from 'react-router';
 import type { ClientToServerEvents, ServerToClientChatMessage } from '~/../../types';
 import { EmojiPicker } from '~/components/emoji-picker';
 import { socket } from '~/socket';
+import { useIsTouchDevice } from '~/use-is-touch-device';
 import { useOnScreenKeyboardScrollFix } from '~/use-on-screen-keyboard-scroll-fix';
 import { useViewportSize } from '~/use-viewport-size';
 import { getUser } from '~/user';
@@ -19,17 +20,18 @@ export async function clientLoader() {
 }
 
 export default function Chat({ params, loaderData }: Route.ComponentProps) {
-	const { roomId } = params;
-	const { currentUser } = loaderData;
+	const viewportSize = useViewportSize();
+	const isTouchDevice = useIsTouchDevice();
+	const [inputValue, setInputValue] = useState('');
+	const [chatMessages, setChatMessages] = useState<ServerToClientChatMessage[]>([]);
+	const [unreadMessages, setUnreadMessages] = useState<number | null>(null);
 	const chatBottom = useRef<HTMLDivElement>(null);
 	const chatContainer = useRef<HTMLDivElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const formRef = useRef<HTMLFormElement>(null);
-	const [inputValue, setInputValue] = useState('');
-	const [chatMessages, setChatMessages] = useState<ServerToClientChatMessage[]>([]);
-	const [unreadMessages, setUnreadMessages] = useState<number | null>(null);
+	const { roomId } = params;
+	const { currentUser } = loaderData;
 	const isAtBottom = unreadMessages === null;
-	const viewportSize = useViewportSize();
 
 	useOnScreenKeyboardScrollFix();
 
@@ -180,10 +182,12 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				)}
 			</section>
 			<footer className="p-2 border-t border-neutral-800 flex items-center gap-2 bg-neutral-900">
-				<EmojiPicker
-					onEmojiClick={({ emoji }) => setInputValue((prev) => prev + emoji)}
-					onCloseAutoFocus={() => textareaRef.current?.focus()}
-				/>
+				{!isTouchDevice && (
+					<EmojiPicker
+						onEmojiClick={({ emoji }) => setInputValue((prev) => prev + emoji)}
+						onCloseAutoFocus={() => textareaRef.current?.focus()}
+					/>
+				)}
 				<form ref={formRef} className="grow" onSubmit={sendChatRoomMessage}>
 					<textarea
 						ref={textareaRef}
