@@ -37,6 +37,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	const { roomId } = params;
 	const { currentUser } = loaderData;
 	const isAtBottom = unreadMessages === null;
+	const hasMessage = inputValue.trim().length > 0;
 
 	useOnScreenKeyboardScrollFix();
 
@@ -186,7 +187,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					</button>
 				)}
 			</section>
-			<footer className="p-2 border-t border-neutral-800 flex items-center gap-2 bg-neutral-900">
+			<footer className="p-2 overflow-hidden border-t border-neutral-800 flex items-center gap-2 bg-neutral-900">
 				{isTouchDevice === false && (
 					<Suspense
 						fallback={
@@ -203,7 +204,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				)}
 				<form
 					ref={formRef}
-					className="grow flex items-center gap-2"
+					className={`grow ${isTouchDevice ? 'grid transition-[grid-template-columns] ease-out items-center' : ''} ${isTouchDevice ? (hasMessage ? 'grid-cols-[1fr_2.5rem] gap-2' : 'grid-cols-[1fr_0] gap-0') : ''}`}
 					onSubmit={sendChatRoomMessage}
 				>
 					<textarea
@@ -223,7 +224,13 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 						}}
 					/>
 					{isTouchDevice && (
-						<button type="submit" className="size-10 shrink-0 rounded-full bg-blue-600">
+						<button
+							type="submit"
+							disabled={!hasMessage}
+							tabIndex={hasMessage ? 0 : -1}
+							aria-hidden={!hasMessage}
+							className={`size-10 grow-0 shrink-0 rounded-full bg-blue-600 transition-all ease-out ${hasMessage ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'}`}
+						>
 							➤<span className="sr-only">Send message</span>
 						</button>
 					)}
