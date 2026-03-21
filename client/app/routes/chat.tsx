@@ -112,7 +112,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 
 	return (
 		<main
-			className="transition-[height] duration-100 h-full max-w-lg mx-auto flex flex-col bg-neutral-900 border border-neutral-800"
+			className="transition-[height] duration-100 h-full max-w-2xl mx-auto flex flex-col bg-neutral-900 border border-neutral-800"
 			style={{ height: viewportSize?.[1] }}
 		>
 			<title>{roomId} room | Chat App</title>
