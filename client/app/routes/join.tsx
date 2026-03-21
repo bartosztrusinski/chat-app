@@ -1,3 +1,4 @@
+import { LogIn } from 'lucide-react';
 import { type SubmitEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { socket } from '~/socket';
@@ -98,9 +99,10 @@ export default function Join() {
 						disabled={
 							roomId.trim().length === 0 || username.trim().length === 0 || !isConnected
 						}
-						className="text-neutral-900 w-full font-medium bg-neutral-200 rounded-xl mt-3 p-3 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 outline-offset-2 outline-neutral-50 cursor-pointer"
+						className="flex justify-center items-center gap-2 text-neutral-900 w-full font-medium bg-neutral-200 rounded-xl mt-3 p-3 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 outline-offset-2 outline-neutral-50 cursor-pointer"
 					>
 						Join Chat
+						<LogIn size={16} />
 					</button>
 				</form>
 			</div>

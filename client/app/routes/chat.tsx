@@ -1,3 +1,4 @@
+import { ArrowDown, ArrowUp } from 'lucide-react';
 import { lazy, type SubmitEvent, Suspense, useEffect, useRef, useState } from 'react';
 import { redirect } from 'react-router';
 import type { ClientToServerEvents, ServerToClientChatMessage } from '~/../../types';
@@ -173,10 +174,11 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				{!isAtBottom && (
 					<button
 						type="button"
-						className="sticky size-10 bg-neutral-600 text-sm rounded-full bottom-3 left-1/2 -translate-x-1/2 shadow-md cursor-pointer"
+						className="sticky flex items-center justify-center size-10 bg-neutral-600 rounded-full bottom-3 left-1/2 -translate-x-1/2 shadow-md cursor-pointer"
 						onClick={() => chatBottom.current?.scrollIntoView({ behavior: 'smooth' })}
 					>
-						🡣<span className="sr-only">Scroll to bottom</span>
+						<ArrowDown size={18} />
+						<span className="sr-only">Scroll to bottom</span>
 						{unreadMessages > 0 && (
 							<span
 								className={`absolute -bottom-1 text-xs px-1 min-w-4 py-0.5 flex place-content-center place-items-center rounded-full bg-blue-500 ${unreadMessages > 99 ? '-right-3' : '-right-1'}`}
@@ -187,7 +189,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					</button>
 				)}
 			</section>
-			<footer className="p-2 overflow-hidden border-t border-neutral-800 flex items-center gap-2 bg-neutral-900">
+			<footer className="p-2 overflow-hidden border-t border-neutral-800 flex items-center gap-2 shrink-0 bg-neutral-900">
 				{isTouchDevice === false && (
 					<Suspense
 						fallback={
@@ -229,9 +231,10 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 							disabled={!hasMessage}
 							tabIndex={hasMessage ? 0 : -1}
 							aria-hidden={!hasMessage}
-							className={`size-10 grow-0 shrink-0 rounded-full bg-blue-600 transition-all ease-out ${hasMessage ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'}`}
+							className={`size-10 flex justify-center items-center rounded-full bg-blue-600 transition-all ease-out ${hasMessage ? 'opacity-100 scale-100' : 'opacity-0 scale-50 pointer-events-none'}`}
 						>
-							➤<span className="sr-only">Send message</span>
+							<ArrowUp size={18} />
+							<span className="sr-only">Send message</span>
 						</button>
 					)}
 				</form>
