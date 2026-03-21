@@ -59,7 +59,7 @@ export default function Join() {
 					aria-atomic="true"
 					className="text-center mt-4 text-sm text-neutral-300"
 				>
-					{isConnected ? 'Connected' : 'Disconnected. Reconnecting...'}
+					{isConnected ? 'Connected' : 'Connecting...'}
 				</p>
 				<form className="space-y-4 mt-12" onSubmit={joinChatRoom}>
 					<div>
