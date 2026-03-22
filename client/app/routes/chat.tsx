@@ -1,5 +1,13 @@
 import { ArrowDown, ArrowUp } from 'lucide-react';
-import { lazy, type SubmitEvent, Suspense, useEffect, useRef, useState } from 'react';
+import {
+	lazy,
+	type SubmitEvent,
+	Suspense,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import { redirect } from 'react-router';
 import type { ClientToServerEvents, ServerToClientChatMessage } from '~/../../types';
 import { socket } from '~/socket';
@@ -35,12 +43,20 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 	const chatContainer = useRef<HTMLDivElement>(null);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const formRef = useRef<HTMLFormElement>(null);
+	const shouldPinOnKeyboardResize = useRef(false);
 	const { roomId } = params;
 	const { currentUser } = loaderData;
 	const isAtBottom = unreadMessages === null;
 	const hasMessage = inputValue.trim().length > 0;
 
 	useOnScreenKeyboardScrollFix();
+
+	const scrollChatToBottom = useCallback((behavior: ScrollBehavior = 'auto') => {
+		chatContainer.current?.scrollTo({
+			top: chatContainer.current.scrollHeight,
+			behavior,
+		});
+	}, []);
 
 	useEffect(() => {
 		const observer = new IntersectionObserver(
@@ -71,7 +87,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 			lastMessage?.type === 'chat' && lastMessage.user.id === currentUser.id;
 
 		if (isAtBottom || (unreadMessages > 0 && isLastMessageFromCurrentUser)) {
-			chatBottom.current?.scrollIntoView({ behavior: 'smooth' });
+			scrollChatToBottom('smooth');
 		}
 	}, [chatMessages, currentUser.id]);
 
@@ -100,6 +116,21 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 		};
 	}, [roomId]);
 
+	// When the on-screen keyboard appears, we want to keep the chat scrolled to the bottom if the user was already at the bottom before the keyboard appeared. We use a ref to track whether we should pin to the bottom on keyboard resize, and we check for that in a useEffect that runs when the viewport size changes which happens when the keyboard appears.
+	useEffect(() => {
+		if (!isTouchDevice || !viewportSize || !shouldPinOnKeyboardResize.current) {
+			return;
+		}
+
+		if (document.activeElement !== textareaRef.current) {
+			shouldPinOnKeyboardResize.current = false;
+			return;
+		}
+
+		requestAnimationFrame(() => scrollChatToBottom('auto'));
+		shouldPinOnKeyboardResize.current = false;
+	}, [isTouchDevice, scrollChatToBottom, viewportSize]);
+
 	function sendChatRoomMessage(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
 		if (inputValue.trim().length > 0) {
@@ -108,12 +139,13 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 				body: inputValue,
 			});
 			setInputValue('');
+			requestAnimationFrame(() => textareaRef.current?.focus({ preventScroll: true }));
 		}
 	}
 
 	return (
 		<main
-			className="transition-[height] duration-100 h-full max-w-2xl mx-auto flex flex-col bg-neutral-900 border border-neutral-800"
+			className="h-full max-w-2xl mx-auto flex flex-col bg-neutral-900 border border-neutral-800"
 			style={{ height: viewportSize?.[1] }}
 		>
 			<title>{roomId} room | Chat App</title>
@@ -175,7 +207,8 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 					<button
 						type="button"
 						className="sticky flex items-center justify-center size-10 bg-neutral-600 rounded-full bottom-3 left-1/2 -translate-x-1/2 shadow-md cursor-pointer"
-						onClick={() => chatBottom.current?.scrollIntoView({ behavior: 'smooth' })}
+						onClick={() => scrollChatToBottom('smooth')}
+						onPointerDown={(event) => event.preventDefault()}
 					>
 						<ArrowDown size={18} />
 						<span className="sr-only">Scroll to bottom</span>
@@ -224,6 +257,12 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 								formRef.current?.requestSubmit();
 							}
 						}}
+						onFocus={() => {
+							shouldPinOnKeyboardResize.current = isTouchDevice === true && isAtBottom;
+						}}
+						onBlur={() => {
+							shouldPinOnKeyboardResize.current = false;
+						}}
 					/>
 					{isTouchDevice && (
 						<button
@@ -231,6 +270,7 @@ export default function Chat({ params, loaderData }: Route.ComponentProps) {
 							disabled={!hasMessage}
 							tabIndex={hasMessage ? 0 : -1}
 							aria-hidden={!hasMessage}
+							onPointerDown={(event) => event.preventDefault()}
 							className={`size-10 flex justify-center items-center rounded-full bg-blue-600 transition-all ease-out ${hasMessage ? 'opacity-100 scale-100' : 'opacity-0 scale-50 pointer-events-none'}`}
 						>
 							<ArrowUp size={18} />
