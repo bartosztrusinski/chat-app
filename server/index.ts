@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import cors from 'cors';
 import express from 'express';
 import { Server } from 'socket.io';
-import type { ClientToServerEvents, ServerToClientEvents } from '../types';
+import type { ClientToServerEvents, ServerToClientEvents, User } from '../types';
 
 type PendingLeave = {
 	timeoutId: NodeJS.Timeout;
@@ -27,6 +27,28 @@ const pendingLeaveRequests = new Map<string, PendingLeave>();
 
 function getLeaveKey(roomId: string, userId: string) {
 	return `${roomId}:${userId}`;
+}
+
+function schedulePendingLeave(roomId: string, user: User, leaveKey: string) {
+	const timeoutId = setTimeout(() => {
+		const currentRoomUsers = activeRoomUsers.get(roomId);
+
+		if (currentRoomUsers?.has(user.id)) {
+			currentRoomUsers.delete(user.id);
+			io.to(roomId).emit('leaveRoom', {
+				type: 'system',
+				body: `${user.name} has left the room.`,
+			});
+		}
+
+		if (currentRoomUsers?.size === 0) {
+			activeRoomUsers.delete(roomId);
+		}
+
+		pendingLeaveRequests.delete(leaveKey);
+	}, PENDING_LEAVE_TIMEOUT);
+
+	pendingLeaveRequests.set(leaveKey, { timeoutId, username: user.name });
 }
 
 app.use(cors(CORS_OPTIONS));
@@ -82,25 +104,25 @@ io.on('connection', (socket) => {
 		const leaveKey = getLeaveKey(roomId, user.id);
 		socket.leave(roomId);
 
-		const timeoutId = setTimeout(() => {
-			const currentRoomUsers = activeRoomUsers.get(roomId);
+		schedulePendingLeave(roomId, user, leaveKey);
+	});
 
-			if (currentRoomUsers?.has(user.id)) {
-				currentRoomUsers.delete(user.id);
-				io.to(roomId).emit('leaveRoom', {
-					type: 'system',
-					body: `${user.name} has left the room.`,
-				});
+	socket.on('disconnect', () => {
+		const { user } = socket.handshake.auth;
+
+		if (!user) {
+			return;
+		}
+
+		for (const [roomId, users] of activeRoomUsers) {
+			if (users.has(user.id)) {
+				const leaveKey = getLeaveKey(roomId, user.id);
+
+				if (!pendingLeaveRequests.has(leaveKey)) {
+					schedulePendingLeave(roomId, user, leaveKey);
+				}
 			}
-
-			if (currentRoomUsers?.size === 0) {
-				activeRoomUsers.delete(roomId);
-			}
-
-			pendingLeaveRequests.delete(leaveKey);
-		}, PENDING_LEAVE_TIMEOUT);
-
-		pendingLeaveRequests.set(leaveKey, { timeoutId, username: user.name });
+		}
 	});
 });
 
