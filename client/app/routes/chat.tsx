@@ -23,7 +23,7 @@ const EmojiPicker = lazy(() =>
 	})),
 );
 
-export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+export function clientLoader({ params }: Route.ClientLoaderArgs) {
 	const { roomId } = params;
 	const currentUser = getUser();
 
