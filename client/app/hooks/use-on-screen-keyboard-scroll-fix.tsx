@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export const useOnScreenKeyboardScrollFix = () => {
+export function useOnScreenKeyboardScrollFix() {
 	useEffect(() => {
 		const handleScroll = () => {
 			window.scrollTo(0, 0);
@@ -12,4 +12,4 @@ export const useOnScreenKeyboardScrollFix = () => {
 			window.removeEventListener('scroll', handleScroll);
 		};
 	}, []);
-};
+}

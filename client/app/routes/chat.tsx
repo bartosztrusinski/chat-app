@@ -10,11 +10,11 @@ import {
 } from 'react';
 import { redirect } from 'react-router';
 import type { ClientToServerEvents, ServerToClientChatMessage } from '~/../../types';
-import { socket } from '~/socket';
-import { useIsTouchDevice } from '~/use-is-touch-device';
-import { useOnScreenKeyboardScrollFix } from '~/use-on-screen-keyboard-scroll-fix';
-import { useViewportSize } from '~/use-viewport-size';
-import { getUser } from '~/user';
+import { useIsTouchDevice } from '~/hooks/use-is-touch-device';
+import { useOnScreenKeyboardScrollFix } from '~/hooks/use-on-screen-keyboard-scroll-fix';
+import { useViewportSize } from '~/hooks/use-viewport-size';
+import { socket } from '~/lib/socket';
+import { getUser } from '~/lib/user';
 import type { Route } from './+types/chat';
 
 const EmojiPicker = lazy(() =>

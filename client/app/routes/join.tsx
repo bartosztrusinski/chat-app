@@ -1,8 +1,8 @@
 import { LogIn } from 'lucide-react';
 import { type SubmitEvent, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { socket } from '~/socket';
-import { getUser, updateUser } from '~/user';
+import { socket } from '~/lib/socket';
+import { getUser, updateUser } from '~/lib/user';
 
 export default function Join() {
 	const user = getUser();

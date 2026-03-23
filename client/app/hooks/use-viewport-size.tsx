@@ -1,37 +1,16 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 
-const useBrowserLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : () => {};
-
 type Size = [number, number];
 
-/**
- * Get the current size of the Viewport. Do not call this excessively, as it may
- * cause performance issues in WebKit. Querying innerWidth/height triggers a
- * re-layout of the page.
- */
-export const getViewportSize = (): Size => {
-	if (window.visualViewport) {
-		// visualViewport is a new prop intended for this exact behavior, prefer it
-		// over all else when available
-		// https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API
-		return [window.visualViewport.width, window.visualViewport.height] as const;
-	}
-
-	return [
-		window.innerWidth,
-		// window.innerHeight gets updated when a user opens the soft keyboard, so
-		// it should be preferred over documentElement.clientHeight
-		// Want more? https://blog.opendigerati.com/the-eccentric-ways-of-ios-safari-with-the-keyboard-b5aa3f34228d
-		window.innerHeight,
-	] as const;
-};
+const useBrowserLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : () => {};
 
 /**
  * Returns the viewport size. This can also be used as a dependency in a
  * useEffect to trigger an update when the browser resizes.
  */
-export const useViewportSize = () => {
+export function useViewportSize() {
 	const [viewportSize, setViewportSize] = useState<Size | undefined>();
+
 	const updateViewportSize = useCallback(() => {
 		const viewportSize = getViewportSize();
 
@@ -48,6 +27,7 @@ export const useViewportSize = () => {
 			return viewportSize;
 		});
 	}, []);
+
 	useBrowserLayoutEffect(updateViewportSize, [updateViewportSize]);
 
 	useEffect(() => {
@@ -75,4 +55,26 @@ export const useViewportSize = () => {
 	}, [updateViewportSize]);
 
 	return viewportSize;
-};
+}
+
+/**
+ * Get the current size of the Viewport. Do not call this excessively, as it may
+ * cause performance issues in WebKit. Querying innerWidth/height triggers a
+ * re-layout of the page.
+ */
+export function getViewportSize(): Size {
+	if (window.visualViewport) {
+		// visualViewport is a new prop intended for this exact behavior, prefer it
+		// over all else when available
+		// https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API
+		return [window.visualViewport.width, window.visualViewport.height];
+	}
+
+	return [
+		window.innerWidth,
+		// window.innerHeight gets updated when a user opens the soft keyboard, so
+		// it should be preferred over documentElement.clientHeight
+		// Want more? https://blog.opendigerati.com/the-eccentric-ways-of-ios-safari-with-the-keyboard-b5aa3f34228d
+		window.innerHeight,
+	];
+}

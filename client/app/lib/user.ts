@@ -1,5 +1,5 @@
-import { socket } from '~/socket';
-import type { User } from '../../types';
+import type { User } from '~/../../types';
+import { socket } from '~/lib/socket';
 
 const USER_KEY = 'user';
 
