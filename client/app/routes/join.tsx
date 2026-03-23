@@ -1,14 +1,18 @@
 import { LogIn } from 'lucide-react';
 import { type SubmitEvent, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { socket } from '~/socket';
 import { getUser, updateUser } from '~/user';
 
 export default function Join() {
 	const user = getUser();
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
+	const roomParam = searchParams.get('room') ?? '';
 	const [isConnected, setIsConnected] = useState(socket.connected);
-	const [roomId, setRoomId] = useState('');
+	const [roomId, setRoomId] = useState(
+		roomParam.length > 0 && roomParam.length <= 24 ? roomParam : '',
+	);
 	const [username, setUsername] = useState(user?.name ?? '');
 
 	useEffect(() => {

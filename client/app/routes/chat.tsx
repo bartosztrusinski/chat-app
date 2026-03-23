@@ -23,11 +23,13 @@ const EmojiPicker = lazy(() =>
 	})),
 );
 
-export async function clientLoader() {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+	const { roomId } = params;
 	const currentUser = getUser();
 
 	if (!currentUser) {
-		return redirect('/');
+		const searchParams = new URLSearchParams({ room: roomId });
+		return redirect(`/?${searchParams}`);
 	}
 
 	return { currentUser };
